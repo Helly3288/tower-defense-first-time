@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tower Defense</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      color: #f39c12;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 12px #f39c12aa;
+    }
+
+    #hud {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 8px;
+      background: #16213e;
+      padding: 8px 24px;
+      border-radius: 8px;
+      border: 1px solid #0f3460;
+      font-size: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hud-item { display: flex; align-items: center; gap: 6px; }
+    .hud-label { color: #888; font-size: 0.85rem; }
+    .hud-val { font-weight: bold; font-size: 1.1rem; color: #fff; min-width: 40px; }
+    #lives-wrap .hud-val { color: #e74c3c; }
+    #gold-wrap .hud-val { color: #f39c12; }
+    #wave-wrap .hud-val { color: #3498db; }
+    #score-wrap .hud-val { color: #2ecc71; }
+    #airWrap { display: none; animation: airPulse 0.9s infinite alternate; }
+    #airWrap .hud-val { color: #85c1e9; }
+    @keyframes airPulse { from { opacity:0.7; } to { opacity:1; } }
+
+    #main {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    #canvasWrap {
+      position: relative;
+      border: 2px solid #0f3460;
+      border-radius: 4px;
+      box-shadow: 0 0 24px rgba(52,152,219,0.3);
+    }
+
+    #gameCanvas { display: block; }
+
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.75);
+      color: #f39c12;
+      font-size: 1.4rem;
+      font-weight: bold;
+      padding: 10px 24px;
+      border-radius: 8px;
+      pointer-events: none;
+      transition: opacity 0.5s;
+      opacity: 0;
+      white-space: nowrap;
+      text-shadow: 0 0 8px #f39c12;
+    }
+
+    #sidebar {
+      width: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    #panel {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    #panel h3 {
+      font-size: 0.85rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .tower-btn {
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 8px 10px;
+      background: #0f3460;
+      color: #eee;
+      border: 1px solid #1a4a80;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      text-align: left;
+      transition: background 0.15s, transform 0.1s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tower-btn:hover { background: #1a5a9a; transform: translateX(2px); }
+    .tower-btn.active { background: #1a5a9a; border-color: #3498db; box-shadow: 0 0 8px #3498db66; }
+    .tower-btn.cant-afford { opacity: 0.45; cursor: not-allowed; }
+    .tower-btn.tower-locked { opacity: 0.4; cursor: not-allowed; background: #1a1a2e; border-color: #444; }
+    .tower-btn.tower-locked:hover { background: #1a1a2e; transform: none; }
+    .tower-btn .cost { color: #f39c12; font-weight: bold; }
+    .tower-btn .lock-badge { font-size: 0.7rem; color: #888; margin-left: 4px; }
+
+    #pauseBtn {
+      padding: 4px 10px;
+      background: #1a3a5a;
+      color: #ccc;
+      border: 1px solid #2a5a8a;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    #pauseBtn:hover:not(:disabled) { background: #2a5a8a; color: #fff; }
+    #pauseBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    #pauseBtn.active { background: #27ae60; border-color: #2ecc71; color: #fff; }
+
+    #startWave {
+      width: 100%;
+      padding: 10px;
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #startWave:hover:not(:disabled) { background: #2ecc71; }
+    #startWave:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
+
+    #upgradePanel {
+      display: none;
+      position: absolute;
+      width: 202px;
+      z-index: 8;
+      background: rgba(14,20,42,0.97);
+      border: 1px solid #1e4080;
+      border-radius: 9px;
+      padding: 10px;
+      font-size: 0.82rem;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.75), 0 0 0 1px rgba(52,152,219,0.12);
+      backdrop-filter: blur(3px);
+    }
+
+    #upgradePanelHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    #upgradePanelClose {
+      background: none; border: 1px solid #334; color: #668;
+      border-radius: 4px; width: 22px; height: 22px; cursor: pointer;
+      font-size: 0.78rem; line-height: 1; flex-shrink: 0;
+      transition: background 0.12s, color 0.12s;
+    }
+    #upgradePanelClose:hover { background: #333; color: #fff; }
+    #upgradePanel h3 { color: #f39c12; margin-bottom: 0; font-size: 0.88rem; }
+    #towerStats { color: #aaa; margin-bottom: 8px; font-size: 0.72rem; line-height: 1.6; }
+
+    /* ── Path selection ─────────────────────── */
+    #pathChoose { display: none; margin-bottom: 6px; }
+    .path-label {
+      text-align: center; color: #666; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+    }
+    .path-choice {
+      background: #0a1828;
+      border: 2px solid #1e3a5f;
+      border-radius: 6px;
+      padding: 7px 9px;
+      cursor: pointer;
+      margin-bottom: 5px;
+      transition: background 0.15s, border-color 0.2s;
+    }
+    .path-choice:hover:not(.cant-afford) { background: #12243e; }
+    .path-choice.cant-afford { opacity: 0.38; cursor: not-allowed; }
+    .pc-name { font-weight: bold; color: #f4d03f; font-size: 0.82rem; margin-bottom: 3px; }
+    .pc-desc { color: #9aa; font-size: 0.69rem; line-height: 1.4; }
+    .pc-cost { color: #2ecc71; font-weight: bold; font-size: 0.78rem; margin-top: 4px; }
+
+    /* ── Chosen path section ────────────────── */
+    #pathChosen { display: none; }
+    #chosenBadge {
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 3px 7px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    #upgradeList {
+      list-style: none;
+      margin-bottom: 7px;
+    }
+    #upgradeList li {
+      padding: 3px 6px;
+      border-radius: 4px;
+      margin-bottom: 2px;
+      font-size: 0.73rem;
+      background: #0f2040;
+    }
+    #upgradeList li.done { color: #2ecc71; background: #0a2015; }
+    #upgradeList li.next { color: #f39c12; background: #1a1000; border: 1px solid #f39c1244; }
+    #upgradeList li.up-desc { color: #778; background: transparent; font-size: 0.67rem; padding: 0 6px 4px; }
+
+    #upgradeTower {
+      width: 100%;
+      padding: 7px 4px;
+      background: #e67e22;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.74rem;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #upgradeTower:hover:not(:disabled) { background: #f39c12; }
+    #upgradeTower:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+    #sellTower {
+      width: 100%;
+      padding: 7px;
+      background: #922b21;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    #sellTower:hover { background: #c0392b; }
+
+    #legendaryUpgrade {
+      display: none;
+      width: 100%;
+      padding: 7px 4px;
+      background: linear-gradient(135deg, #7d5a00, #3d2c00);
+      color: #f1c40f;
+      border: 2px solid #c8a020;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.74rem;
+      margin-bottom: 5px;
+      text-shadow: 0 0 8px #f1c40faa;
+      box-shadow: 0 0 8px #c8a02044;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    #legendaryUpgrade:hover:not(:disabled) {
+      background: linear-gradient(135deg, #b8860b, #5a3e00);
+      box-shadow: 0 0 16px #f1c40f66;
+    }
+    #legendaryUpgrade:disabled {
+      background: linear-gradient(135deg, #3a2a00, #1a1400);
+      color: #c8a020;
+      cursor: default;
+      box-shadow: 0 0 4px #c8a02033;
+    }
+
+    /* ── Heal & Boosts panels ───────────────── */
+    #healPanel, #boostsPanel {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.82rem;
+    }
+    #healPanel h3, #boostsPanel h3 {
+      font-size: 0.78rem; color: #888;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 7px;
+    }
+    .action-btn {
+      width: 100%;
+      margin-bottom: 5px;
+      padding: 7px 8px;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.15s, background 0.15s;
+      text-align: left;
+    }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    #healBtn  { background: #1a7a4a; color: #fff; }
+    #healBtn:hover:not(:disabled)  { background: #21a060; }
+    #furyBtn  { background: #7d1a1a; color: #ffdddd; }
+    #furyBtn:hover:not(:disabled)  { background: #a52020; }
+    #freezeBtn { background: #1a3a6a; color: #d0e8ff; }
+    #freezeBtn:hover:not(:disabled) { background: #1e4888; }
+    #fortifyBtn { background: #4a3800; color: #ffe9a0; }
+    #fortifyBtn:hover:not(:disabled) { background: #6a5200; }
+
+    /* ── Event modal ───────────────────────── */
+    #eventModal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.72);
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+    }
+    #eventBox {
+      background: #16213e;
+      border: 2px solid #f39c12;
+      border-radius: 10px;
+      padding: 20px 24px;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 0 30px #f39c1266;
+    }
+    #eventTitle { color: #f39c12; font-size: 1.1rem; margin-bottom: 8px; }
+    #eventDesc  { color: #ccc; font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px; }
+    .event-choice-btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 9px 12px;
+      background: #0f3460;
+      color: #eee;
+      border: 1px solid #1a4a80;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .event-choice-btn:hover { background: #1a5a9a; border-color: #f39c12; }
+
+    #legend {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.72rem;
+      color: #aaa;
+    }
+    #legend h3 { color: #888; font-size: 0.78rem; margin-bottom: 5px; }
+    .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Пролог ────────────────────────────────────────────────── */
+    #storyPrologue {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center, #07101e 0%, #020508 100%);
+      z-index: 20;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 24px;
+    }
+    #prologueTitle {
+      color: #c8a020;
+      font-size: 1.35rem;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px #c8a020aa;
+      margin: 6px 0 2px;
+    }
+    #prologueLines { text-align: center; }
+    .prologue-line {
+      display: block;
+      color: #a8c0d8;
+      font-size: 0.88rem;
+      font-style: italic;
+      line-height: 1.8;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .prologue-line.visible { opacity: 1; transform: translateY(0); }
+    #prologueStart {
+      margin-top: 10px;
+      padding: 10px 32px;
+      background: #c8a020;
+      color: #0a0800;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.5s, background 0.15s;
+      box-shadow: 0 0 16px #c8a02066;
+    }
+    #prologueStart.visible { opacity: 1; }
+    #prologueStart:hover { background: #f0c030; }
+
+    /* ── Диалог ────────────────────────────────────────────────── */
+    #storyDialogue {
+      display: none;
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(4, 10, 22, 0.93);
+      border-top: 2px solid #1a3a6a;
+      z-index: 15;
+      flex-direction: row;
+      align-items: center;
+      padding: 10px 14px;
+      gap: 12px;
+      backdrop-filter: blur(2px);
+    }
+    #dlgPortrait {
+      width: 64px; height: 64px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      image-rendering: pixelated;
+    }
+    #dlgBody { flex: 1; min-width: 0; }
+    #dlgName {
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    #dlgText {
+      color: #dde8f8;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      min-height: 36px;
+    }
+    #dlgControls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    #dlgNext {
+      padding: 6px 14px;
+      background: #1a3a6a;
+      color: #7ec8ff;
+      border: 1px solid #2a5a9a;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    #dlgNext:hover { background: #2a5aaa; }
+    #dlgHint {
+      font-size: 0.62rem;
+      color: #446;
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+
+    /* ── Эпилог ────────────────────────────────────────────────── */
+    #storyEpilogue {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to bottom, #050505, #0a0a14);
+      z-index: 25;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 28px 20px;
+      transition: background 2s;
+    }
+    #epilogueLines { text-align: center; }
+    .epilogue-line {
+      display: block;
+      color: #b0c8e0;
+      font-size: 0.88rem;
+      font-style: italic;
+      line-height: 1.9;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .epilogue-line.visible { opacity: 1; transform: translateY(0); }
+    .epilogue-victory {
+      display: block;
+      color: #c8a020;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 8px;
+      text-shadow: 0 0 24px #c8a020cc;
+      opacity: 0;
+      transition: opacity 1s ease;
+      margin-top: 8px;
+    }
+    .epilogue-victory.visible { opacity: 1; }
+    #epilogueScore {
+      color: #7ec8ff;
+      font-size: 1rem;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 0.6s;
+    }
+    #epilogueScore.visible { opacity: 1; }
+    #epilogueRestart {
+      margin-top: 14px;
+      padding: 10px 32px;
+      background: #c8a020;
+      color: #0a0800;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.6s, background 0.15s;
+      box-shadow: 0 0 16px #c8a02066;
+    }
+    #epilogueRestart.visible { opacity: 1; }
+    #epilogueRestart:hover { background: #f0c030; }
+
+    /* ── Map selection screen ───────────────────────────────────────────────── */
+    #mapSelectModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 20, 0.92);
+      z-index: 7000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    #mapSelectModal.map-select--visible { opacity: 1; }
+    #mapSelectModal.map-select--hiding  { opacity: 0; pointer-events: none; }
+    #mapSelectBox {
+      width: min(960px, 96vw);
+      padding: 28px 24px 24px;
+    }
+    #mapSelectBox h2 {
+      text-align: center;
+      font-size: 1.6rem;
+      color: #c8a020;
+      letter-spacing: 3px;
+      text-shadow: 0 0 20px #c8a02088;
+      margin-bottom: 24px;
+    }
+    #mapSelectCards {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .map-card {
+      background: linear-gradient(160deg, #0e1a2e, #141e30);
+      border: 1.5px solid #2c3e50;
+      border-radius: 14px;
+      padding: 18px 16px 16px;
+      width: 272px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .map-card:hover {
+      border-color: #c8a020;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(200,160,32,0.18);
+    }
+    .map-card-name {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .map-preview {
+      border-radius: 8px;
+      border: 1px solid #2c3e50;
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .map-diff {
+      font-size: 0.82rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .map-desc {
+      font-size: 0.8rem;
+      color: #b0bec5;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .map-bonus {
+      font-size: 0.75rem;
+      color: #f39c12;
+      text-align: center;
+      min-height: 1.1em;
+      font-style: italic;
+    }
+    .map-select-btn {
+      margin-top: 4px;
+      padding: 9px 0;
+      background: #c8a020;
+      color: #0a0800;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .map-select-btn:hover { background: #f0c030; }
+
+    /* ── Achievement notifications ─────────────────────────────────────────── */
+    .ach-notify {
+      position: fixed;
+      bottom: 24px;
+      right: -340px;
+      width: 300px;
+      background: linear-gradient(135deg, #1a2a1a, #0f2010);
+      border: 2px solid #2ecc71;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 0 24px #2ecc7166, 0 4px 16px #000a;
+      z-index: 9999;
+      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s;
+      opacity: 0;
+    }
+    .ach-notify--show { right: 24px; opacity: 1; }
+    .ach-notify--hide { right: -340px; opacity: 0; }
+    .ach-notify-icon { font-size: 2.2rem; line-height: 1; }
+    .ach-notify-label { font-size: 0.65rem; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; }
+    .ach-notify-name  { font-size: 1rem; font-weight: bold; color: #fff; margin-top: 2px; }
+
+    /* ── Achievement modal ─────────────────────────────────────────────────── */
+    #achModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000b;
+      z-index: 8000;
+      align-items: center;
+      justify-content: center;
+    }
+    #achBox {
+      background: #12161e;
+      border: 2px solid #2980b9;
+      border-radius: 14px;
+      padding: 24px 28px;
+      width: min(640px, 95vw);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+    #achBox h2 { color: #7ec8ff; margin-bottom: 12px; font-size: 1.3rem; }
+    #achProgress {
+      background: #1e2a38;
+      border-radius: 6px;
+      height: 10px;
+      margin-bottom: 6px;
+      overflow: hidden;
+    }
+    #achProgressFill { height: 100%; background: linear-gradient(90deg, #2980b9, #2ecc71); transition: width 0.4s; }
+    #achProgressText { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 16px; display: block; }
+    #achGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .ach-card {
+      background: #1e2a38;
+      border: 1px solid #2c3e50;
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      opacity: 0.45;
+      cursor: default;
+      transition: transform 0.15s;
+    }
+    .ach-card--done { opacity: 1; border-color: #2ecc71; }
+    .ach-card--done:hover { transform: translateY(-2px); }
+    .ach-card-icon { font-size: 1.8rem; margin-bottom: 4px; }
+    .ach-card-name { font-size: 0.72rem; font-weight: bold; color: #fff; line-height: 1.2; }
+    .ach-card-sub  { font-size: 0.62rem; color: #7f8c8d; margin-top: 3px; }
+    #achCloseBtn {
+      margin-top: 18px;
+      padding: 8px 28px;
+      background: #2980b9;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    #achCloseBtn:hover { background: #3498db; }
+    #achBtn {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px 0;
+      background: #1e2a38;
+      color: #7ec8ff;
+      border: 1px solid #2980b9;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    #achBtn:hover { background: #253448; }
+    #kbBtn {
+      display: block;
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px 0;
+      background: #1e2a18;
+      color: #a8d8a0;
+      border: 1px solid #2a6030;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    #kbBtn:hover { background: #253a20; }
+
+    /* ── Knowledge Book ──────────────────────────────────────────────────── */
+    #kbModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.87);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+    }
+    #kbPanel {
+      background: #12161e;
+      border: 2px solid #2471a3;
+      border-radius: 14px;
+      width: 900px;
+      max-width: 96vw;
+      height: 600px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(36,113,163,0.35);
+    }
+    #kbHeader {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px 0;
+      flex-shrink: 0;
+    }
+    #kbHeader h2 { flex:1; color:#f39c12; font-size:1.15rem; letter-spacing:2px; margin:0; }
+    #kbClose {
+      background: transparent; border: 1px solid #444; color: #aaa;
+      border-radius: 6px; width: 28px; height: 28px; cursor: pointer;
+      font-size: 0.9rem; line-height: 1; transition: background 0.15s, color 0.15s;
+    }
+    #kbClose:hover { background: #333; color: #fff; }
+    #kbTabs {
+      display: flex; gap: 3px;
+      padding: 10px 20px 0; flex-shrink: 0;
+      border-bottom: 1px solid #1a3060;
+    }
+    .kb-tab {
+      padding: 6px 18px; background: #0e1828; color: #556;
+      border: 1px solid #1a2a3a; border-bottom: none;
+      border-radius: 6px 6px 0 0; cursor: pointer;
+      font-size: 0.85rem; font-weight: bold;
+      transition: background 0.15s, color 0.15s;
+    }
+    .kb-tab:hover { background: #1a2a3a; color: #aaa; }
+    .kb-tab.kb-active { background: #16213e; color: #f39c12; border-color: #2471a3; }
+    #kbContent { flex:1; overflow-y:auto; padding: 16px 20px 20px; }
+    .kb-section { display: none; }
+    .kb-section.kb-active { display: block; }
+    .kb-tower-card {
+      background: #0e1828; border: 1px solid #1e3254;
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+    }
+    .kb-card-hdr { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .kb-dot {
+      width:22px; height:22px; border-radius:50%; flex-shrink:0;
+      border: 2px solid rgba(255,255,255,0.12);
+    }
+    .kb-card-name { font-size:0.92rem; font-weight:bold; color:#fff; }
+    .kb-card-meta { font-size:0.7rem; color:#7f8c8d; margin-top:1px; }
+    .kb-stats-row {
+      display:flex; gap:14px; flex-wrap:wrap;
+      margin-bottom:8px; font-size:0.76rem; color:#9aa;
+    }
+    .kb-stats-row b { color:#ddd; }
+    .kb-effective { font-size:0.72rem; color:#2ecc71; margin-bottom:9px; }
+    .kb-effective span { color:#556; }
+    .kb-paths { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+    .kb-path {
+      flex:1; min-width:150px; background:#080f1a;
+      border:1px solid #1e3254; border-radius:6px; padding:8px 10px;
+    }
+    .kb-path-name { font-weight:bold; font-size:0.78rem; color:#f4d03f; margin-bottom:3px; }
+    .kb-path-desc { font-size:0.7rem; color:#899; line-height:1.4; }
+    .kb-legendary {
+      background:linear-gradient(135deg,#140e00,#1e1500);
+      border:1px solid #7d5a00; border-radius:6px; padding:7px 10px;
+      font-size:0.73rem;
+    }
+    .kb-legendary-hdr { font-weight:bold; color:#c8a020; margin-bottom:2px; }
+    .kb-legendary-desc { color:#9a7820; }
+    .kb-section-title {
+      color:#7ec8ff; font-size:0.77rem; text-transform:uppercase;
+      letter-spacing:1.5px; margin:14px 0 8px;
+      padding-bottom:4px; border-bottom:1px solid #1a3060;
+    }
+    .kb-section-title:first-child { margin-top:0; }
+    .kb-enemy-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:9px;
+    }
+    .kb-enemy-card {
+      background:#0e1828; border:1px solid #1e3254;
+      border-radius:8px; padding:10px 12px;
+    }
+    .kb-enemy-hdr { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .kb-enemy-name { font-size:0.85rem; font-weight:bold; color:#e0e0e0; }
+    .kb-enemy-wave { font-size:0.67rem; color:#3498db; margin-top:1px; }
+    .kb-enemy-stats { font-size:0.71rem; color:#aaa; line-height:1.65; }
+    .kb-enemy-stats .warn { color:#e74c3c; }
+    .kb-enemy-kill { font-size:0.7rem; color:#2ecc71; margin-top:5px; }
+    .kb-enemy-kill span { color:#556; }
+    .kb-synergy-card {
+      background:#0e1828; border:1px solid #1e3254;
+      border-radius:8px; padding:11px 14px; margin-bottom:9px;
+    }
+    .kb-synergy-pair { display:flex; align-items:center; gap:5px; margin-bottom:6px; }
+    .kb-syn-name { font-size:0.88rem; font-weight:bold; color:#fff; margin-left:4px; }
+    .kb-synergy-bonus { font-size:0.78rem; color:#2ecc71; margin-bottom:3px; }
+    .kb-synergy-tip { font-size:0.7rem; color:#7f8c8d; font-style:italic; }
+    .kb-rec-title {
+      color:#f39c12; font-size:0.77rem; text-transform:uppercase;
+      letter-spacing:1px; margin:16px 0 8px;
+      padding-bottom:4px; border-bottom:1px solid #2a1e00;
+    }
+    .kb-rec-list { list-style:none; }
+    .kb-rec-list li {
+      font-size:0.78rem; color:#b09040; padding:6px 10px;
+      background:#0a0800; border:1px solid #2a1e00;
+      border-radius:5px; margin-bottom:5px; font-style:italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚔ TOWER DEFENSE ⚔</h1>
+
+  <div id="hud">
+    <div class="hud-item" id="map-wrap">
+      <span class="hud-label">🗺 Карта</span>
+      <span class="hud-val" id="mapName" style="font-size:0.8rem;color:#c8a020">—</span>
+    </div>
+    <div class="hud-item" id="lives-wrap">
+      <span class="hud-label">❤ Жизни</span>
+      <span class="hud-val" id="lives">20</span>
+    </div>
+    <div class="hud-item" id="gold-wrap">
+      <span class="hud-label">💰 Золото</span>
+      <span class="hud-val" id="gold">200</span>
+    </div>
+    <div class="hud-item" id="wave-wrap">
+      <span class="hud-label">🌊 Волна</span>
+      <span class="hud-val" id="wave">0</span>
+    </div>
+    <div class="hud-item" id="score-wrap">
+      <span class="hud-label">⭐ Счёт</span>
+      <span class="hud-val" id="score">0</span>
+    </div>
+    <div class="hud-item" id="airWrap">
+      <span class="hud-label">✈</span>
+      <span class="hud-val">Воздух!</span>
+    </div>
+    <div class="hud-item" id="countdownWrap" style="display:none">
+      <span class="hud-label">⏱ Авто</span>
+      <span class="hud-val" id="countdown" style="color:#e74c3c">20</span>
+    </div>
+    <div class="hud-item" id="boostHUD" style="display:none">
+      <span class="hud-val" id="boostHUDText" style="color:#f39c12;font-size:0.85rem"></span>
+    </div>
+    <div class="hud-item">
+      <button id="pauseBtn" disabled>⏸ Пауза</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="canvasWrap">
+      <canvas id="gameCanvas"></canvas>
+      <div id="message"></div>
+
+      <!-- Tower upgrade popup (positioned absolutely near clicked tower) -->
+      <div id="upgradePanel">
+        <div id="upgradePanelHeader">
+          <h3 id="towerName">Башня</h3>
+          <button id="upgradePanelClose" title="Закрыть">✕</button>
+        </div>
+        <div id="towerStats"></div>
+
+        <!-- Path selection (upgradeLevel = 0) -->
+        <div id="pathChoose">
+          <div class="path-label">— выберите путь —</div>
+          <div id="pathABtn" class="path-choice">
+            <div class="pc-name">А: —</div>
+            <div class="pc-desc">—</div>
+            <div class="pc-cost">—g</div>
+          </div>
+          <div id="pathBBtn" class="path-choice">
+            <div class="pc-name">Б: —</div>
+            <div class="pc-desc">—</div>
+            <div class="pc-cost">—g</div>
+          </div>
+        </div>
+
+        <!-- Path chosen (upgradeLevel >= 1) -->
+        <div id="pathChosen">
+          <div id="chosenBadge"></div>
+          <ul id="upgradeList"></ul>
+          <button id="upgradeTower">Улучшить</button>
+        </div>
+
+        <button id="legendaryUpgrade">★ Легендарное</button>
+        <button id="sellTower">Продать</button>
+      </div>
+
+      <!-- Пролог -->
+      <div id="storyPrologue">
+        <canvas id="prologueCrest" width="140" height="140"></canvas>
+        <h2 id="prologueTitle">АЙРОНХОЛД</h2>
+        <div id="prologueLines"></div>
+        <button id="prologueStart">Начать защиту</button>
+      </div>
+
+      <!-- Диалог персонажей -->
+      <div id="storyDialogue">
+        <canvas id="dlgPortrait" width="64" height="64"></canvas>
+        <div id="dlgBody">
+          <div id="dlgName"></div>
+          <div id="dlgText"></div>
+        </div>
+        <div id="dlgControls">
+          <button id="dlgNext">▶▶</button>
+          <div id="dlgHint">Пробел / клик</div>
+        </div>
+      </div>
+
+      <!-- Эпилог -->
+      <div id="storyEpilogue">
+        <div id="epilogueLines"></div>
+        <div id="epilogueScore"></div>
+        <button id="epilogueRestart">Играть снова</button>
+      </div>
+
+      <div id="eventModal">
+        <div id="eventBox">
+          <div id="eventTitle">Событие</div>
+          <div id="eventDesc"></div>
+          <div id="eventChoices"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sidebar">
+      <div id="panel">
+        <h3>Башни</h3>
+        <button class="tower-btn" data-type="basic">
+          <span>🏰 Базовая</span><span class="cost">50g</span>
+        </button>
+        <button class="tower-btn" data-type="sniper">
+          <span>🎯 Снайпер</span><span class="cost">100g</span>
+        </button>
+        <button class="tower-btn" data-type="explosion">
+          <span>💥 Взрыв</span><span class="cost">125g</span>
+        </button>
+        <button class="tower-btn" data-type="slow">
+          <span>❄️ Замед.</span><span class="cost">80g</span>
+        </button>
+        <button class="tower-btn" data-type="antiair">
+          <span>🛡 Зенитка</span><span class="cost">150g</span>
+        </button>
+        <button class="tower-btn" data-type="mine">
+          <span>⛏ Шахта</span><span class="cost">200g</span>
+        </button>
+        <button class="tower-btn tower-locked" data-type="lightning" disabled>
+          <span>⚡ Молния <span class="lock-badge">[вол. 12]</span></span><span class="cost">200g</span>
+        </button>
+        <button class="tower-btn tower-locked" data-type="time" disabled>
+          <span>⏳ Время <span class="lock-badge">[вол. 20]</span></span><span class="cost">250g</span>
+        </button>
+      </div>
+
+      <button id="startWave">Начать волну 1</button>
+
+      <div id="healPanel" style="display:none">
+        <h3>Лечение</h3>
+        <button class="action-btn" id="healBtn">💊 Лечение (+1 ❤) — 60g</button>
+      </div>
+
+      <div id="boostsPanel" style="display:none">
+        <h3>Усиления</h3>
+        <button class="action-btn" id="furyBtn">⚔ Ярость — 80g</button>
+        <button class="action-btn" id="freezeBtn">❄ Заморозка — 60g</button>
+        <button class="action-btn" id="fortifyBtn">🛡 Фортификация — 90g</button>
+      </div>
+
+      <button id="achBtn">🏆 Достижения</button>
+      <button id="kbBtn">📖 Книга знаний</button>
+
+    </div>
+  </div>
+
+  <!-- Achievement modal -->
+  <div id="achModal">
+    <div id="achBox">
+      <h2>🏆 Достижения</h2>
+      <div id="achProgress"><div id="achProgressFill" style="width:0%"></div></div>
+      <span id="achProgressText">0 из 20 получено</span>
+      <div id="achGrid"></div>
+      <button id="achCloseBtn">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Knowledge Book modal -->
+  <div id="kbModal">
+    <div id="kbPanel">
+      <div id="kbHeader">
+        <h2>📖 Книга знаний</h2>
+        <button id="kbClose">✕</button>
+      </div>
+      <div id="kbTabs">
+        <button class="kb-tab kb-active" data-tab="towers">🏰 Башни</button>
+        <button class="kb-tab" data-tab="enemies">👹 Враги</button>
+        <button class="kb-tab" data-tab="synergies">⚡ Синергии</button>
+      </div>
+      <div id="kbContent">
+        <div class="kb-section kb-active" id="kb-towers"></div>
+        <div class="kb-section" id="kb-enemies"></div>
+        <div class="kb-section" id="kb-synergies"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/audio.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/towers.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/story.js"></script>
+  <script src="js/records.js"></script>
+  <script src="js/maps.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
