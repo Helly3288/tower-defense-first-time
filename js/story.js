@@ -837,9 +837,9 @@ class StoryManager {
     const dialogues = STORY_BY_MAP[n] || storyMap1;
     const lines = dialogues[60] || [];
     if (n === 1) {
-      this.showDialogue(lines, () => this.showMap1Transition(() => location.reload()));
+      this.showDialogue(lines, () => this.showMap1Transition(() => this.game.loadNextMap(2)));
     } else if (n === 2) {
-      this.showDialogue(lines, () => this.showMap2Transition(() => location.reload()));
+      this.showDialogue(lines, () => this.showMap2Transition(() => this.game.loadNextMap(3)));
     } else {
       this.showDialogue(lines, () => this.showMap3Epilogue(score, wave, startTime));
     }

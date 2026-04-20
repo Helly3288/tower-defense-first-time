@@ -100,8 +100,9 @@ class MapSelectScreen {
     document.body.appendChild(el);
     this._el = el;
 
-    MAP_DEFS.forEach(map => {
-      const card = this._buildCard(map);
+    const completed = parseInt(localStorage.getItem('tdMapCompleted') || '0');
+    MAP_DEFS.forEach((map, idx) => {
+      const card = this._buildCard(map, idx <= completed);
       cards.appendChild(card);
     });
 
@@ -109,9 +110,9 @@ class MapSelectScreen {
     requestAnimationFrame(() => el.classList.add('map-select--visible'));
   }
 
-  _buildCard(map) {
+  _buildCard(map, unlocked = true) {
     const card = document.createElement('div');
-    card.className = 'map-card';
+    card.className = 'map-card' + (unlocked ? '' : ' map-card--locked');
 
     // Name
     const name = document.createElement('div');
@@ -151,8 +152,15 @@ class MapSelectScreen {
     // Select button
     const btn = document.createElement('button');
     btn.className = 'map-select-btn';
-    btn.textContent = 'Выбрать';
-    btn.addEventListener('click', () => this._pick(map));
+    if (unlocked) {
+      btn.textContent = 'Выбрать';
+      btn.addEventListener('click', () => this._pick(map));
+    } else {
+      btn.textContent = '🔒 Заблокирована';
+      btn.disabled = true;
+      btn.style.opacity = '0.45';
+      btn.style.cursor = 'not-allowed';
+    }
     card.appendChild(btn);
 
     return card;

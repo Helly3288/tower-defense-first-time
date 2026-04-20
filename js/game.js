@@ -330,6 +330,71 @@ class Game {
     this._initGate();
   }
 
+  // Переход на следующую карту без возврата на экран выбора
+  loadNextMap(mapNum) {
+    const mapDef = MAP_DEFS[mapNum - 1];
+    if (!mapDef) return;
+
+    // Сохранить прогресс: карта (mapNum-1) пройдена → mapNum разблокирована
+    const prev = parseInt(localStorage.getItem('tdMapCompleted') || '0');
+    if (mapNum - 1 > prev) {
+      localStorage.setItem('tdMapCompleted', String(mapNum - 1));
+    }
+
+    // Сбросить игровое состояние
+    this.towers              = [];
+    this.enemies             = [];
+    this.bullets             = [];
+    this.particles           = [];
+    this.lightningBalls      = [];
+    this.radiationZones      = [];
+    this.deathStains         = [];
+    this.gateLabels          = [];
+    this.gold                = 200;
+    this.lives               = 25;
+    this.wave                = 0;
+    this.score               = 0;
+    this.startTime           = null;
+    this.waveInProgress      = false;
+    this.spawnQueue          = [];
+    this.spawnTimer          = 0;
+    this.selectedTower       = null;
+    this.gameOver            = false;
+    this.victory             = false;
+    this.gameOverPending     = false;
+    this.gameOverTimer       = 0;
+    this.autoWaveCountdown   = 0;
+    this.paused              = false;
+    this.healUsedCount       = 0;
+    this.furyActive          = false;
+    this.freezeActive        = false;
+    this.fortifyActive       = false;
+    this.raidActive          = false;
+    this.plagueWavesLeft     = 0;
+    this.merchantReward      = 0;
+    this.freezeSpawnCount    = 0;
+    this.bossTitleEffect     = null;
+    this.towerDamageDebuffTimer = 0;
+    this._unlockNotified     = new Set();
+    this._timeFreezeGlobalCD = 0;
+    this.dayPhase            = 0;
+    this.exitBlinkTimer      = 0;
+    this.storyReady          = false;
+
+    // Скрыть UI-панели прошлой карты
+    this.ui.hideUpgradePanel();
+
+    // Применить новую карту (включая запуск музыки)
+    this.applyMap(mapDef);
+
+    // Сбросить story и показать пролог новой карты
+    this.story.lastShownWave = -1;
+    this.story.showMapPrologue(mapNum, () => {
+      this.startTime = Date.now();
+      this.storyReady = true;
+    });
+  }
+
   togglePause() {
     if (!this.waveInProgress || this.gameOver || this.gameOverPending) return;
     this.paused = !this.paused;
