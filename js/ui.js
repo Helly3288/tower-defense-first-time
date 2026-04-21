@@ -14,7 +14,7 @@ class UI {
   }
 
   initButtons() {
-    // Tower placement buttons
+    // Tower placement buttons (both panels)
     document.querySelectorAll('.tower-btn').forEach(btn => {
       const type = btn.dataset.type;
       this.towerButtons[type] = btn;
@@ -188,6 +188,19 @@ class UI {
   }
 
   deselect() {
+    this.selectedTowerType = null;
+    Object.values(this.towerButtons).forEach(b => b.classList.remove('active'));
+  }
+
+  // Переключить панель башен при смене карты
+  switchPanel(mapId) {
+    const panel1 = document.getElementById('panel');
+    const panel2 = document.getElementById('panel2');
+    if (!panel1 || !panel2) return;
+    const isGorge = (mapId === 'gorge');
+    panel1.style.display = isGorge ? 'none' : 'block';
+    panel2.style.display = isGorge ? 'block' : 'none';
+    // Сбросить выбранную башню при переходе
     this.selectedTowerType = null;
     Object.values(this.towerButtons).forEach(b => b.classList.remove('active'));
   }
@@ -373,6 +386,46 @@ class UI {
         badge.style.background = '#1a0030';
         badge.style.borderColor= '#9b59b6';
         badge.style.color      = '#9b59b6';
+      } else if (tower.type === 'torch') {
+        badge.textContent      = '🔥 Факельник';
+        badge.style.background = '#1a0800';
+        badge.style.borderColor= '#d35400';
+        badge.style.color      = '#e67e22';
+      } else if (tower.type === 'catapult') {
+        badge.textContent      = '🪨 Катапульта';
+        badge.style.background = '#1a0e00';
+        badge.style.borderColor= '#6b4226';
+        badge.style.color      = '#a07840';
+      } else if (tower.type === 'scorpion') {
+        badge.textContent      = '🦂 Скорпион';
+        badge.style.background = '#1a1700';
+        badge.style.borderColor= '#b7950b';
+        badge.style.color      = '#d4ac0d';
+      } else if (tower.type === 'sandstorm') {
+        badge.textContent      = '🌪 Песчаный Вихрь';
+        badge.style.background = '#1a1200';
+        badge.style.borderColor= '#c8a060';
+        badge.style.color      = '#d4aa6a';
+      } else if (tower.type === 'tombguard') {
+        badge.textContent      = '⚔ Стражник Гробниц';
+        badge.style.background = '#1a1400';
+        badge.style.borderColor= '#d4a520';
+        badge.style.color      = '#f0c040';
+      } else if (tower.type === 'obelisk') {
+        badge.textContent      = '🔮 Обелиск';
+        badge.style.background = '#1a0a20';
+        badge.style.borderColor= '#9b59b6';
+        badge.style.color      = '#c39bd3';
+      } else if (tower.type === 'snakecharmer') {
+        badge.textContent      = '🐍 Заклинатель Змей';
+        badge.style.background = '#001a0a';
+        badge.style.borderColor= '#27ae60';
+        badge.style.color      = '#58d68d';
+      } else if (tower.type === 'sunmirror') {
+        badge.textContent      = '☀ Солнечное Зеркало';
+        badge.style.background = '#1a1600';
+        badge.style.borderColor= '#d4ac0d';
+        badge.style.color      = '#f1c40f';
       } else {
         badge.textContent      = '✈ Зенитная башня';
         badge.style.background = '#1c2533';
@@ -608,12 +661,70 @@ class UI {
         linearUpgrades: ['Замедление 60%','Радиус +50%','Добавить урон 15/сек'],
         warning: 'Максимум 2 башни на карте · Откат "Остановки" общий для обеих',
         legendary: { name: 'Остановка времени', desc: 'Замораживает всех врагов на 3 сек (откат 30 сек, общий для обеих башен)' }
+      },
+      // ── Map 2: Desert towers ─────────────────────────────────────────────────
+      {
+        name: 'Факельник', color: '#d35400', cost: 100, tax: 3, map: '🏜 Пустыня руин',
+        stats: [['Урон','15'],['Радиус','2.5'],['Ожог','3% maxHP/сек · 4 сек']],
+        effective: 'Танки с высоким HP, боссы — ожог масштабируется с HP',
+        linearUpgrades: ['Урон +50%','Ожог 7 сек','Радиус +40%'],
+        legendary: { name: 'Живой огонь', desc: 'Огонь перекидывается на врагов в радиусе 1 клетки от цели' }
+      },
+      {
+        name: 'Катапульта', color: '#6b4226', cost: 125, tax: 4, map: '🏜 Пустыня руин',
+        stats: [['Урон','60 (площадь)'],['Радиус','3.5'],['Перезарядка','Медленная']],
+        effective: 'Плотные группы, медленные танки',
+        linearUpgrades: ['Урон +60%','Площадь +50%','Скорость +40%'],
+        legendary: { name: 'Огненный камень', desc: 'Каждый 4-й выстрел поджигает всю область (3% maxHP/сек, 4 сек)' }
+      },
+      {
+        name: 'Скорпион', color: '#b7950b', cost: 150, tax: 4, map: '🏜 Пустыня руин',
+        stats: [['Урон','8 + стаки яда'],['Радиус','3'],['Яд','до 5 стаков × 2% maxHP/сек']],
+        effective: 'Боссы и толстые враги — 5 стаков = 10% maxHP/сек',
+        linearUpgrades: ['Макс. стаков 8','Урон стака 3%','Радиус +40%'],
+        legendary: { name: 'Смертельное жало', desc: 'При максимальных стаках враг взрывается ядом (радиус 1 клетки)' }
+      },
+      {
+        name: 'Песчаный Вихрь', color: '#c8a060', cost: 175, tax: 4, map: '🏜 Пустыня руин',
+        stats: [['Тип','Аура (постоянно)'],['Замедление','35%'],['Урон','10/сек всем в радиусе']],
+        effective: 'Поддержка всех наземных башен в зоне — двойная роль',
+        linearUpgrades: ['Замедление 55%','Радиус +50%','Урон 20/сек'],
+        legendary: { name: 'Ока Пустыни', desc: 'Соседние башни (≤2 кл.) получают +30% урон' }
+      },
+      {
+        name: 'Стражник Гробниц', color: '#d4a520', cost: 200, tax: 5, map: '🏜 Пустыня руин',
+        stats: [['Урон','25'],['Радиус','1.5'],['Блок','Останавливает врага на 2 сек']],
+        effective: 'Замедление атаки волны — даёт другим башням время добить цель',
+        linearUpgrades: ['Урон +70%','Блок 4 сек','2 цели одновременно'],
+        legendary: { name: 'Печать Гробницы', desc: 'Заблокированный враг получает ×3 урона от всех башен' }
+      },
+      {
+        name: 'Обелиск', color: '#9b59b6', cost: 225, tax: 5, map: '🏜 Пустыня руин',
+        stats: [['Урон','5'],['Радиус','4'],['Проклятие','+60% входящего урона · 8 сек']],
+        effective: 'Боссы — проклятие делает их уязвимыми для всех башен',
+        linearUpgrades: ['Урон +100%','Проклятие 12 сек','Радиус +50%'],
+        legendary: { name: 'Великое Проклятие', desc: 'Проклятие распространяется на врагов в 2 клетках от цели' }
+      },
+      {
+        name: 'Заклинатель Змей', color: '#27ae60', cost: 250, tax: 5, map: '🏜 Пустыня руин',
+        stats: [['Тип','Змея по пути'],['Урон','20 + яд 2%/сек'],['Интервал','Раз в 5 сек']],
+        effective: 'Контроль пути — змея движется по дорожке и атакует всех на ней',
+        linearUpgrades: ['Змея 15 клеток','Яд 4%/сек','+1 змея'],
+        legendary: { name: 'Взрыв яда', desc: 'Змеи взрываются ядом (4%/сек, радиус 1.5 кл.) при смерти врага' }
+      },
+      {
+        name: 'Солнечное Зеркало', color: '#f1c40f', cost: 300, tax: 6, unlock: 'С волны 8', map: '🏜 Пустыня руин',
+        stats: [['Тип','Луч по линии'],['Урон','45 (с затуханием 85%)'],['Радиус','5']],
+        effective: 'Длинные прямые участки — луч бьёт нескольких врагов сразу',
+        linearUpgrades: ['Урон +50%','Без затухания','Радиус +60%'],
+        legendary: { name: 'Солнечная пушка', desc: 'Луч поджигает всех врагов в линии на 5 сек (3% maxHP/сек)' }
       }
     ];
 
     const html = towers.map(t => {
       const meta = [`${t.cost}g`, `Налог: ${t.tax}g`];
       if (t.unlock) meta.push(t.unlock);
+      if (t.map)    meta.push(t.map);
 
       const statsHtml = t.stats.map(([k,v]) => `<span><b>${v}</b> ${k}</span>`).join('');
 
@@ -731,7 +842,13 @@ class UI {
   }
 
   _buildKBSynergies() {
-    const C = { basic:'#3498db', sniper:'#27ae60', explosion:'#e67e22', slow:'#00bcd4', antiair:'#7f8c8d', mine:'#7d5a2c', lightning:'#f1c40f', time:'#9b59b6' };
+    const C = {
+      basic:'#3498db', sniper:'#27ae60', explosion:'#e67e22', slow:'#00bcd4',
+      antiair:'#7f8c8d', mine:'#7d5a2c', lightning:'#f1c40f', time:'#9b59b6',
+      // Map 2
+      torch:'#d35400', catapult:'#6b4226', scorpion:'#b7950b', sandstorm:'#c8a060',
+      tombguard:'#d4a520', obelisk:'#9b59b6', snakecharmer:'#27ae60', sunmirror:'#f1c40f',
+    };
 
     const synergies = [
       { types:['sniper','explosion'],   names:['Снайпер','Взрыв'],               bonus: '+25% урон обеим башням',                                tip: 'Ставьте рядом на прямых участках пути' },
@@ -740,6 +857,12 @@ class UI {
       { types:['basic','basic'],        names:['Базовая','Базовая'],              bonus: 'Обе башни +15% урон и радиус',                          tip: 'Эффективно на ранних волнах' },
       { types:['sniper','time'],        names:['Снайпер','Башня Времени'],        bonus: 'Снайпер игнорирует броню врагов',                       tip: 'Лучшая комбинация против бронированных боссов' },
       { types:['lightning','antiair'],  names:['Молния','Зенитка'],              bonus: 'Зенитка получает цепной эффект на 1 доп. врага',        tip: 'Эффективно когда летят группы воздушных врагов' },
+      // ── Карта 2: Пустыня руин ────────────────────────────────────────────────
+      { types:['torch','catapult'],     names:['Факельник','Катапульта'],         bonus: 'Катапульта поджигает каждый выстрел (3% maxHP/сек)',     tip: 'Комбо делает каждый снаряд огненным — идеально против групп' },
+      { types:['scorpion','obelisk'],   names:['Скорпион','Обелиск'],             bonus: 'Скорпион накапливает двойные стаки яда',                 tip: 'Проклятие от Обелиска + двойные стаки = мгновенная смерть боссов' },
+      { types:['tombguard',null],       names:['Стражник Гробниц','любая башня'],bonus: 'Соседние башни ×2 урон по заблокированным врагам',       tip: 'Особенно мощно с Обелиском: блок + проклятие + ×2 урон' },
+      { types:['sunmirror','obelisk'],  names:['Солнечное Зеркало','Обелиск'],    bonus: 'Луч зеркала накладывает проклятие на каждого врага',     tip: 'Луч проклинает всех на линии — весь путь получает +60% урон' },
+      { types:['sandstorm',null],       names:['Песч. Вихрь (легенд.)','башни ≤2 кл.'], bonus: 'Соседние башни +30% урон',                        tip: 'Легендарная аура Ока Пустыни усиливает весь кластер башен' },
     ];
 
     const synHtml = synergies.map(s => {
@@ -759,6 +882,9 @@ class UI {
       'Против боссов: Снайпер + Башня Времени + Отравление',
       'Пассивный доход: 3–5 Шахт в углах + Молния для групп',
       'Универсальная: Башня Времени в центре + все типы башен вокруг',
+      '[Пустыня] Против боссов: Обелиск + Скорпион (двойные стаки)',
+      '[Пустыня] Контроль волны: Стражник + Вихрь + Катапульта',
+      '[Пустыня] Урон по линии: Зеркало + Обелиск (проклятый луч)',
     ];
 
     const noticeHtml = `<div style="font-size:0.73rem;color:#7f8c8d;margin-bottom:14px;padding:9px 12px;background:#0a0f18;border-radius:7px;border:1px solid #1a2a3a;line-height:1.6">

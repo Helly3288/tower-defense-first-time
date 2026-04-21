@@ -14,6 +14,7 @@ const MAP_DEFS = [
     damageMult: 1,
     enemyMult:  1,
     expertMode: false,
+    startGold:  200,
     coords: [
       [0,2],[1,2],[2,2],[3,2],[4,2],[5,2],
       [5,3],[5,4],[5,5],[5,6],
@@ -35,11 +36,13 @@ const MAP_DEFS = [
     diffColor: '#f39c12',
     desc: 'Короткий путь — враги добегают быстро. Больше золота за убийство.',
     bonusDesc: '+25% золото · враги +20% скорость',
-    goldMult:   1.25,
-    speedMult:  1.20,
-    damageMult: 1,
-    enemyMult:  1,
-    expertMode: false,
+    goldMult:    1.8,
+    speedMult:   1.20,
+    damageMult:  1,
+    enemyMult:   1,
+    expertMode:  false,
+    startGold:   450,
+    bossGoldCap: 200,
     coords: [
       [0,7],[1,7],[2,7],[3,7],[4,7],
       [4,6],[4,5],[4,4],[4,3],
@@ -60,6 +63,7 @@ const MAP_DEFS = [
     damageMult: 0.85,
     enemyMult:  0.8,
     expertMode: true,
+    startGold:  200,
     coords: [
       [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],
       [10,1],[11,1],[12,1],[13,1],[14,1],[15,1],[16,1],[17,1],[18,1],[19,1],
@@ -100,9 +104,8 @@ class MapSelectScreen {
     document.body.appendChild(el);
     this._el = el;
 
-    const completed = parseInt(localStorage.getItem('tdMapCompleted') || '0');
-    MAP_DEFS.forEach((map, idx) => {
-      const card = this._buildCard(map, idx <= completed);
+    MAP_DEFS.forEach(map => {
+      const card = this._buildCard(map, true);
       cards.appendChild(card);
     });
 

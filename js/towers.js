@@ -93,6 +93,127 @@ const TOWER_DEFS = {
   },
 };
 
+// ─── Map 2 tower definitions ──────────────────────────────────────────────────
+Object.assign(TOWER_DEFS, {
+  torch: {
+    name: 'Факельник', cost: 100, mapOnly: 'gorge',
+    color: '#d35400', accentColor: '#e67e22',
+    damage: 15, range: 90, fireRate: 45,
+    bulletColor: '#ff6b35', bulletSize: 5, bulletSpeed: 8,
+    description: 'Поджигает: 3% maxHP/сек на 4 сек',
+    burnPct: 0.03, burnDuration: 4,
+    linearUpgrades: [
+      { name: 'Жаркий огонь',    desc: 'Урон +50%',          cost: 120, damageMult: 1.5 },
+      { name: 'Длинное пламя',   desc: 'Ожог 7 сек',         cost: 160, burnDuration: 7 },
+      { name: 'Широкий факел',   desc: 'Радиус +40%',        cost: 200, rangeMult: 1.4 },
+    ],
+    legendary: { name: 'Живой огонь', cost: 350, desc: 'Огонь перекидывается на врагов в радиусе 1 клетки' },
+  },
+  catapult: {
+    name: 'Катапульта', cost: 125, mapOnly: 'gorge',
+    color: '#6b4226', accentColor: '#8b5e3c',
+    damage: 60, range: 126, fireRate: 180,
+    bulletColor: '#7f8c8d', bulletSize: 8, bulletSpeed: 5,
+    splashRadius: 54,
+    description: 'Большой урон по площади, снаряд по дуге',
+    isArc: true,
+    linearUpgrades: [
+      { name: 'Тяжёлый камень', desc: 'Урон +60%',           cost: 160, damageMult: 1.6 },
+      { name: 'Широкое падение', desc: 'Площадь +50%',       cost: 200, splashMult: 1.5 },
+      { name: 'Быстрая зарядка', desc: 'Скорость +40%',      cost: 240, fireRateMult: 1/1.4 },
+    ],
+    legendary: { name: 'Огненный камень', cost: 400, desc: 'Каждый 4-й выстрел поджигает всю область (3% maxHP/сек)' },
+  },
+  scorpion: {
+    name: 'Скорпион', cost: 150, mapOnly: 'gorge',
+    color: '#b7950b', accentColor: '#9a7d0a',
+    damage: 8, range: 108, fireRate: 35,
+    bulletColor: '#8dde26', bulletSize: 4, bulletSpeed: 9,
+    description: 'Стаки яда: до 5 стаков × 2% maxHP/сек',
+    isScorpion: true, maxScorpionStacks: 5,
+    linearUpgrades: [
+      { name: 'Смертельный яд',  desc: 'Макс. стаков 8',     cost: 180, maxScorpionStacks: 3 },
+      { name: 'Едкий токсин',    desc: 'Урон стака 3%',      cost: 220, scorpionPctBonus: 0.01 },
+      { name: 'Длинное жало',    desc: 'Радиус +40%',        cost: 260, rangeMult: 1.4 },
+    ],
+    legendary: { name: 'Смертельное жало', cost: 450, desc: 'При максимальных стаках враг взрывается ядом (радиус 1 клетки)' },
+  },
+  sandstorm: {
+    name: 'Песч. Вихрь', cost: 175, mapOnly: 'gorge',
+    color: '#c8a060', accentColor: '#a07840',
+    damage: 0, range: 126, fireRate: 9999,
+    bulletColor: '#c8a060', bulletSize: 0, bulletSpeed: 0,
+    description: 'Аура: замедл. 35% + 10 урона/сек всем в радиусе',
+    isSandstorm: true, isAura: true,
+    sandstormSlowFactor: 0.65, sandstormDps: 10,
+    linearUpgrades: [
+      { name: 'Сильный ветер',   desc: 'Замедление 55%',     cost: 200, sandstormSlowBonus: 0.2 },
+      { name: 'Широкий вихрь',   desc: 'Радиус +50%',        cost: 240, rangeMult: 1.5 },
+      { name: 'Острый песок',    desc: 'Урон 20/сек',        cost: 280, sandstormDpsBonus: 10 },
+    ],
+    legendary: { name: 'Ока Пустыни', cost: 500, desc: 'Соседние башни (≤2 кл.) получают +30% урон' },
+  },
+  tombguard: {
+    name: 'Стражник', cost: 200, mapOnly: 'gorge',
+    color: '#d4a520', accentColor: '#a07800',
+    damage: 35, range: 108, fireRate: 480,
+    bulletColor: '#d4a520', bulletSize: 4, bulletSpeed: 10,
+    description: 'Блокирует ВСЕХ врагов в радиусе 3 кл. на 3 сек · Перезарядка 5 сек',
+    isGuard: true, guardBlockDuration: 3,
+    linearUpgrades: [
+      { name: 'Тяжёлая булава',  desc: 'Урон +70%',               cost: 220, damageMult: 1.7 },
+      { name: 'Долгий блок',     desc: 'Длительность блока 5 сек', cost: 260, guardBlockBonus: 2 },
+      { name: 'Широкий захват',  desc: 'Радиус +50%',              cost: 300, rangeMult: 1.5 },
+    ],
+    legendary: { name: 'Печать Гробницы', cost: 400, desc: 'Заблокированные враги получают ×3 урона от всех башен в радиусе 4 клеток' },
+  },
+  obelisk: {
+    name: 'Обелиск', cost: 225, mapOnly: 'gorge',
+    color: '#c8a020', accentColor: '#9b7800',
+    damage: 5, range: 144, fireRate: 90,
+    bulletColor: '#9b59b6', bulletSize: 5, bulletSpeed: 7,
+    description: 'Проклятие: +60% входящего урона на 8 сек',
+    isCurse: true, curseFactor: 1.6, curseDuration: 8,
+    linearUpgrades: [
+      { name: 'Тёмные руны',     desc: 'Урон +100%',         cost: 240, damageMult: 2.0 },
+      { name: 'Долгое проклятие',desc: 'Длительность 12 сек', cost: 280, curseDurationBonus: 4 },
+      { name: 'Широкий охват',   desc: 'Радиус +50%',        cost: 320, rangeMult: 1.5 },
+    ],
+    legendary: { name: 'Великое Проклятие', cost: 550, desc: 'Проклятие распространяется на всех врагов в 2 клетках от цели' },
+  },
+  snakecharmer: {
+    name: 'Заклинатель', cost: 250, mapOnly: 'gorge',
+    color: '#27ae60', accentColor: '#1e8449',
+    damage: 0, range: 0, fireRate: 9999,
+    bulletColor: '#27ae60', bulletSize: 0, bulletSpeed: 0,
+    description: 'Раз в 5 сек — змея: 20 урона + яд 2%/сек',
+    isSnakeCharmer: true,
+    snakeDamage: 20, snakePoisonPct: 0.02, snakePoisonDuration: 3,
+    snakeDistance: 8, snakeInterval: 5, maxSnakes: 3,
+    linearUpgrades: [
+      { name: 'Длинная змея',    desc: 'Змея проходит 15 клеток', cost: 280, snakeDistanceBonus: 7 },
+      { name: 'Смертельный яд',  desc: 'Яд 4%/сек',          cost: 320, snakePoisonBonus: 0.02 },
+      { name: 'Выводок',         desc: '+1 змея одновременно', cost: 360, maxSnakesBonus: 1 },
+    ],
+    legendary: { name: 'Взрыв яда', cost: 500, desc: 'Змеи взрываются ядом (4%/сек, 3 сек, радиус 1.5 кл.) при смерти врага' },
+  },
+  sunmirror: {
+    name: 'Зеркало', cost: 300, mapOnly: 'gorge',
+    color: '#f1c40f', accentColor: '#d4ac0d',
+    damage: 45, range: 180, fireRate: 80,
+    bulletColor: '#fffaaa', bulletSize: 4, bulletSpeed: 20,
+    description: 'Луч — бьёт всех врагов на одном отрезке пути',
+    isSunMirror: true, unlockWave: 8,
+    mirrorDmgDecay: 0.85,
+    linearUpgrades: [
+      { name: 'Концентрированный луч', desc: 'Урон +50%',    cost: 320, damageMult: 1.5 },
+      { name: 'Прямой удар',    desc: 'Без снижения по цепи', cost: 380, mirrorNoPenalty: true },
+      { name: 'Длинный луч',    desc: 'Радиус +60%',         cost: 440, rangeMult: 1.6 },
+    ],
+    legendary: { name: 'Солнечная пушка', cost: 600, desc: 'Луч поджигает всех врагов в линии на 5 сек (3% maxHP/сек)' },
+  },
+});
+
 // ─── Upgrade paths (A / B) ────────────────────────────────────────────────────
 const TOWER_PATHS = {
   basic: {
@@ -202,6 +323,10 @@ function _giveCombo(tower, partner, label, bonuses) {
   if (bonuses.fireRate  !== undefined) tower.comboMult.fireRate  *= bonuses.fireRate;
   if (bonuses.armorPierce)             tower.comboMult.armorPierce = true;
   if (bonuses.chainBonus)              tower.comboMult.chainBonus += bonuses.chainBonus;
+  if (bonuses.catBurn)                 tower.comboMult.catBurn    = true;
+  if (bonuses.doubleStacks)            tower.comboMult.doubleStacks = true;
+  if (bonuses.blockBonus)              tower.comboMult.blockBonus = true;
+  if (bonuses.mirrorCurse)             tower.comboMult.mirrorCurse = true;
 }
 
 function _applyPairCombo(a, b) {
@@ -236,6 +361,34 @@ function _applyPairCombo(a, b) {
     const antiair   = ta==='antiair'   ? a : b;
     const lightning = ta==='lightning' ? a : b;
     _giveCombo(antiair, lightning, 'Молния+Зенитка: цепной удар', { chainBonus: 1 });
+  }
+  // ── Map 2 combos ─────────────────────────────────────────────────────────────
+  // Факельник + Катапульта: катапульта поджигает при каждом попадании
+  if ((ta==='torch'&&tb==='catapult')||(ta==='catapult'&&tb==='torch')) {
+    const cat = ta==='catapult' ? a : b;
+    _giveCombo(cat, ta==='torch'?a:b, 'Факельник+Катапульта: огонь', { catBurn: true });
+  }
+  // Скорпион + Обелиск: проклятые враги получают стаки в 2× быстрее
+  if ((ta==='scorpion'&&tb==='obelisk')||(ta==='obelisk'&&tb==='scorpion')) {
+    const sc = ta==='scorpion' ? a : b;
+    _giveCombo(sc, ta==='obelisk'?a:b, 'Скорпион+Обелиск: двойные стаки', { doubleStacks: true });
+  }
+  // Стражник + любая: заблокированный враг получает ×2 урона
+  if (ta==='tombguard' || tb==='tombguard') {
+    const other = ta==='tombguard' ? b : a;
+    const guard = ta==='tombguard' ? a : b;
+    _giveCombo(other, guard, 'Стражник: ×2 по блокированным', { blockBonus: true });
+  }
+  // Зеркало + Обелиск: луч накладывает проклятие на всех в линии
+  if ((ta==='sunmirror'&&tb==='obelisk')||(ta==='obelisk'&&tb==='sunmirror')) {
+    const mirror = ta==='sunmirror' ? a : b;
+    _giveCombo(mirror, ta==='obelisk'?a:b, 'Зеркало+Обелиск: луч проклинает', { mirrorCurse: true });
+  }
+  // Вихрь легендарный — проверяется динамически в _applyPairCombo при recalculate
+  if ((ta==='sandstorm'&&a.legendary) || (tb==='sandstorm'&&b.legendary)) {
+    const storm = ta==='sandstorm' ? a : b;
+    const other = ta==='sandstorm' ? b : a;
+    if (storm.legendary) _giveCombo(other, storm, 'Ока Пустыни: +30% урон', { damage: 1.3 });
   }
 }
 
@@ -275,7 +428,19 @@ function applyEffect(tower, effect) {
   if (effect.slowFactor    !== undefined) tower.slowFactor   = effect.slowFactor;
   if (effect.mineIncome    !== undefined) tower.mineIncome  += effect.mineIncome;
   if (effect.chainTargets  !== undefined) tower.chainTargets = (tower.chainTargets || 0) + effect.chainTargets;
-  if (effect.auraSlowFactor!== undefined) tower.auraSlowFactor = effect.auraSlowFactor;
+  if (effect.auraSlowFactor   !== undefined) tower.auraSlowFactor = effect.auraSlowFactor;
+  // Map 2 tower upgrade effects
+  if (effect.maxScorpionStacks!== undefined) tower.maxScorpionStacks = (tower.maxScorpionStacks||5) + effect.maxScorpionStacks;
+  if (effect.scorpionPctBonus !== undefined) tower.scorpionPctBonus  = (tower.scorpionPctBonus||0) + effect.scorpionPctBonus;
+  if (effect.sandstormSlowBonus!==undefined) tower.sandstormSlowFactor= Math.max(0.1, (tower.sandstormSlowFactor||0.65) - effect.sandstormSlowBonus);
+  if (effect.sandstormDpsBonus!== undefined) tower.sandstormDps = (tower.sandstormDps||10) + effect.sandstormDpsBonus;
+  if (effect.guardBlockBonus  !== undefined) tower.guardBlockDuration = (tower.guardBlockDuration||3) + effect.guardBlockBonus;
+  if (effect.curseDurationBonus!==undefined) tower.curseDuration = (tower.curseDuration||8) + effect.curseDurationBonus;
+  if (effect.mirrorNoPenalty  !== undefined) tower.mirrorNoPenalty = true;
+  if (effect.snakeDistanceBonus!==undefined) tower.snakeDistance = (tower.snakeDistance||8) + effect.snakeDistanceBonus;
+  if (effect.snakePoisonBonus !== undefined) tower.snakePoisonPct = (tower.snakePoisonPct||0.02) + effect.snakePoisonBonus;
+  if (effect.maxSnakesBonus   !== undefined) tower.maxSnakes = (tower.maxSnakes||3) + effect.maxSnakesBonus;
+  if (effect.burnDuration     !== undefined) tower.burnDuration = effect.burnDuration;
 }
 
 // ─── Pierce bullet (travels straight, hits all enemies in path) ───────────────
@@ -437,6 +602,198 @@ class RadiationZone {
   }
 }
 
+// ─── Arc bullet (Катапульта) ─────────────────────────────────────────────────
+class ArcBullet {
+  constructor(x, y, target, def, splashRadius) {
+    this.startX = x; this.startY = y;
+    this.x = x; this.y = y;
+    this.target = target;
+    this.damage = def.damage;
+    this.splashRadius = splashRadius || 54;
+    this.color  = def.bulletColor;
+    this.size   = def.bulletSize || 8;
+    this.progress = 0;
+    this.speed    = def.bulletSpeed || 5;
+    this.dead     = false;
+    this.exploding = false; this.explodeTimer = 0;
+    this.hitX = 0; this.hitY = 0;
+    this.burn = def.burn || false;
+    this.burnPct = def.burnPct || 0;
+    this.burnDuration = def.burnDuration || 4;
+    this.fireShot = def.fireShot || false;
+    this.armorPierce = def.armorPierce || false;
+  }
+
+  update(enemies) {
+    if (this.exploding) {
+      this.explodeTimer++;
+      if (this.explodeTimer > 14) this.dead = true;
+      return [];
+    }
+    if (!this.target || this.target.dead || this.target.reached) { this.dead = true; return []; }
+    const dx = this.target.x - this.startX, dy = this.target.y - this.startY;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    this.progress += (this.speed * 60) / (dist * 60);
+    if (this.progress >= 1) {
+      this.hitX = this.target.x; this.hitY = this.target.y;
+      this.exploding = true;
+      const hits = [];
+      enemies.forEach(e => {
+        if (e.dead || e.reached) return;
+        const ex = e.x - this.hitX, ey = e.y - this.hitY;
+        if (Math.sqrt(ex*ex + ey*ey) <= this.splashRadius) {
+          e.takeDamage(this.damage, this.armorPierce);
+          if (this.burnPct > 0) e.applyBurn(e.maxHP * this.burnPct, this.burnDuration);
+          else if (this.burn)   e.applyBurn(this.damage * 0.5, this.burnDuration);
+          hits.push(e);
+        }
+      });
+      return hits;
+    }
+    const t = this.progress;
+    this.x = this.startX + dx * t;
+    this.y = this.startY + dy * t - 64 * 4 * t * (1 - t);
+    return [];
+  }
+
+  draw(ctx) {
+    if (this.exploding) {
+      const r  = this.splashRadius * (this.explodeTimer / 14);
+      const op = 1 - this.explodeTimer / 14;
+      ctx.save(); ctx.globalAlpha = op;
+      ctx.strokeStyle = this.fireShot ? '#e67e22' : '#888';
+      ctx.lineWidth   = this.fireShot ? 4 : 3;
+      ctx.beginPath(); ctx.arc(this.hitX, this.hitY, r, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = this.fireShot ? 'rgba(230,120,0,0.18)' : 'rgba(120,120,120,0.18)';
+      ctx.fill();
+      ctx.restore(); return;
+    }
+    ctx.save();
+    ctx.shadowColor = this.fireShot ? '#e67e22' : '#666'; ctx.shadowBlur = this.fireShot ? 10 : 4;
+    ctx.fillStyle = this.fireShot ? '#e74c3c' : '#7f8c8d';
+    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill();
+    if (this.fireShot) {
+      ctx.globalAlpha = 0.5; ctx.fillStyle = '#f39c12';
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.size + 3, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// ─── Snake (Заклинатель Змей) ─────────────────────────────────────────────────
+class Snake {
+  constructor(path, startIndex, def) {
+    this.path         = path;
+    this.pathIndex    = Math.min(startIndex, path.length - 2);
+    this.x = path[this.pathIndex]?.x || path[0].x;
+    this.y = path[this.pathIndex]?.y || path[0].y;
+    this.speed        = 1.5;                     // cells per second
+    this.maxCells     = def.snakeDistance || 8;
+    this.cellsTraveled= 0;
+    this.dead         = false;
+    this.hit          = new Set();
+    this.damage       = def.snakeDamage   || 20;
+    this.poisonPct    = def.snakePoisonPct   || 0.02;
+    this.poisonDuration = def.snakePoisonDuration || 3;
+    this.poisonExplode= def.poisonExplode || false;
+    this.activeSnakesRef = null;
+  }
+
+  update(dt, enemies) {
+    if (this.dead) return [];
+    const step = this.speed * CELL * dt;
+    this.cellsTraveled += step / CELL;
+    if (this.cellsTraveled >= this.maxCells || this.pathIndex >= this.path.length - 1) {
+      this.dead = true; return [];
+    }
+    const target = this.path[this.pathIndex + 1];
+    const dx = target.x - this.x, dy = target.y - this.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    if (step >= dist) {
+      this.x = target.x; this.y = target.y; this.pathIndex++;
+    } else {
+      this.x += (dx / dist) * step; this.y += (dy / dist) * step;
+    }
+    const hits = [];
+    enemies.forEach(e => {
+      if (e.dead || e.reached || this.hit.has(e)) return;
+      const ex = e.x - this.x, ey = e.y - this.y;
+      if (Math.sqrt(ex*ex + ey*ey) <= e.size + 12) {
+        e.takeDamage(this.damage, true);
+        e.applyPoison(e.maxHP * this.poisonPct, this.poisonDuration);
+        this.hit.add(e); hits.push(e);
+      }
+    });
+    return hits;
+  }
+
+  draw(ctx) {
+    if (this.dead) return;
+    const now = Date.now() * 0.006;
+    ctx.save();
+    ctx.shadowColor = '#27ae60'; ctx.shadowBlur = 8;
+    // Body wave
+    const wave = Math.sin(now) * 3;
+    ctx.fillStyle = '#2ecc71';
+    ctx.beginPath(); ctx.ellipse(this.x + wave, this.y, 8, 5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1e8449';
+    ctx.beginPath(); ctx.ellipse(this.x + wave, this.y, 6, 3.5, 0, 0, Math.PI*2); ctx.fill();
+    // Eyes
+    ctx.shadowBlur = 0; ctx.fillStyle = '#f1c40f';
+    ctx.beginPath(); ctx.arc(this.x + wave + 3,  this.y - 2, 1.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(this.x + wave + 3,  this.y + 2, 1.5, 0, Math.PI*2); ctx.fill();
+    // Tongue
+    ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(this.x + wave + 7, this.y);
+    ctx.lineTo(this.x + wave + 11, this.y - 2);
+    ctx.moveTo(this.x + wave + 7, this.y);
+    ctx.lineTo(this.x + wave + 11, this.y + 2); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ─── Beam effect (Зеркало Солнца) ─────────────────────────────────────────────
+class BeamEffect {
+  constructor(x, y, angle, range, precomputedHits) {
+    this.x = x; this.y = y;
+    this.angle = angle;
+    this.range = range;
+    this._hits = precomputedHits;
+    this._hitsDone = false;
+    this.life = 10;
+    this.dead = false;
+    this.damage = 0; // damage already applied
+  }
+
+  update(enemies) {
+    this.life--;
+    if (this.life <= 0) this.dead = true;
+    if (!this._hitsDone) { this._hitsDone = true; return this._hits; }
+    return [];
+  }
+
+  draw(ctx) {
+    const a = this.life / 10;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = 24;
+    ctx.strokeStyle = '#fffaaa'; ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + Math.cos(this.angle) * this.range,
+               this.y + Math.sin(this.angle) * this.range);
+    ctx.stroke();
+    // Inner bright core
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + Math.cos(this.angle) * this.range,
+               this.y + Math.sin(this.angle) * this.range);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
 // ─── Standard bullet ─────────────────────────────────────────────────────────
 class Bullet {
   constructor(x, y, target, def, towerType, splashRadius) {
@@ -460,6 +817,16 @@ class Bullet {
     this.poisonSpread   = def.poisonSpread   || false;
     this.nuclear     = def.nuclear     || false;
     this.armorPierce = def.armorPierce || false;
+    // Map 2 fields
+    this.burnPct        = def.burnPct        || 0;
+    this.isScorpion     = def.isScorpion     || false;
+    this.maxScorpionStacks = def.maxScorpionStacks || 5;
+    this.scorpionLegendary = def.scorpionLegendary || false;
+    this.isCurse        = def.isCurse        || false;
+    this.curseFactor    = def.curseFactor    || 1.6;
+    this.curseDuration  = def.curseDuration  || 8;
+    this.curseLegendary = def.curseLegendary || false;
+    this.fireLegendary  = def.fireLegendary  || false;
     this.dead     = false;
     this.hitX = 0; this.hitY = 0;
     this.annihilator = def.annihilator || false;
@@ -470,15 +837,18 @@ class Bullet {
 
   _onHit(e) {
     if (this.slowFactor < 1) {
-      // Башня Замедления: максимум 60% замедления (slowFactor не ниже 0.4)
       const sf = this.towerType === 'slow' ? Math.max(this.slowFactor, 0.4) : this.slowFactor;
       e.applySlow(sf, this.slowDuration);
     }
-    if (this.burn)             e.applyBurn(this.burnDps, this.burnDuration);
+    if (this.burn)    e.applyBurn(this.burnDps, this.burnDuration);
+    if (this.burnPct) e.applyBurn(e.maxHP * this.burnPct, this.burnDuration);
     if (this.poison) {
       const dps = this.poisonPct > 0 ? e.maxHP * this.poisonPct : this.poisonDps;
       e.applyPoison(dps, this.poisonDuration);
     }
+    if (this.isCurse) e.applyCurse(this.curseFactor, this.curseDuration);
+    // blockBonus combo: заблокированные враги получают x2 от этой башни
+    // (actual ×2 applied in takeDamage via enemy.blockedFactor when set by tombguard legendary)
   }
 
   update(enemies) {
@@ -611,7 +981,7 @@ class Tower {
     this.annihilator    = false;
 
     // Combo system
-    this.comboMult        = { damage: 1, range: 1, fireRate: 1, armorPierce: false, chainBonus: 0 };
+    this.comboMult        = { damage: 1, range: 1, fireRate: 1, armorPierce: false, chainBonus: 0, catBurn: false, doubleStacks: false, blockBonus: false, mirrorCurse: false };
     this.activeComboTypes = [];
     this.comboPartners    = [];
 
@@ -626,6 +996,34 @@ class Tower {
     this.mineIncome  = def.mineIncome  || 0;
     this.antiairOnly = (type === 'antiair');
     this.isLinear    = !!(def.linearUpgrades);
+    // Map 2 specific fields
+    this.mapOnly          = def.mapOnly          || null;
+    this.burnPct          = def.burnPct          || 0;
+    this.isArc            = def.isArc            || false;
+    this.isScorpion       = def.isScorpion       || false;
+    this.maxScorpionStacks= def.maxScorpionStacks|| 5;
+    this.scorpionPctBonus = 0;
+    this.isSandstorm      = def.isSandstorm      || false;
+    this.sandstormSlowFactor = def.sandstormSlowFactor || 0.65;
+    this.sandstormDps     = def.sandstormDps     || 10;
+    this.isGuard          = def.isGuard          || false;
+    this.guardBlockDuration= def.guardBlockDuration || 3;
+    this._guardBlocking   = [];
+    this.isCurse          = def.isCurse          || false;
+    this.curseFactor      = def.curseFactor      || 1.6;
+    this.curseDuration    = def.curseDuration    || 8;
+    this.isSnakeCharmer   = def.isSnakeCharmer   || false;
+    this.snakeDamage      = def.snakeDamage      || 20;
+    this.snakePoisonPct   = def.snakePoisonPct   || 0.02;
+    this.snakePoisonDuration = def.snakePoisonDuration || 3;
+    this.snakeDistance    = def.snakeDistance    || 8;
+    this.snakeInterval    = def.snakeInterval    || 5;
+    this.maxSnakes        = def.maxSnakes        || 3;
+    this._snakeTimer      = 0;
+    this._activeSnakeCount= 0;
+    this.isSunMirror      = def.isSunMirror      || false;
+    this.mirrorDmgDecay   = def.mirrorDmgDecay   || 0.85;
+    this.mirrorNoPenalty  = false;
 
     // Meta
     this.totalSpent  = def.cost;
@@ -702,6 +1100,15 @@ class Tower {
     if (this.type === 'antiair')   this.legendaryTimer = 20;
     if (this.type === 'lightning') this.legendaryTimer = 20;
     if (this.type === 'time')      this.legendaryTimer = 30;
+    // Map 2 legendary activations (flags used in getDef / update)
+    // torch: fireLegendary handled via getDef
+    // catapult: fireShot every 4th handled in update
+    // scorpion: scorpionLegendary handled via getDef + game.js
+    // sandstorm: combo recalculated in ui.js after buy
+    // tombguard: sealFactor = 3 in update (checks this.legendary)
+    // obelisk: curseLegendary handled via getDef + game.js
+    // snakecharmer: poisonExplode = this.legendary passed into Snake
+    // sunmirror: burn beam handled in update (checks this.legendary)
     return true;
   }
 
@@ -770,16 +1177,97 @@ class Tower {
       bulletSpeed: this.bulletSpeed, splashRadius: this.splashRadius,
       slowFactor: this.slowFactor, slowDuration: this.slowDuration,
       burn: this.burn, burnDps: this.burnDps, burnDuration: this.burnDuration,
+      burnPct: this.burnPct,
       poison: this.poison, poisonDps: this.poisonDps, poisonPct: this.poisonPct, poisonDuration: this.poisonDuration, poisonSpread: this.poisonSpread,
       nuclear: this.nuclear,
       chainTargets: this.chainTargets + cm.chainBonus,
       armorPierce: cm.armorPierce,
       annihilator: this.annihilator,
+      // Map 2
+      isScorpion: this.isScorpion,
+      maxScorpionStacks: this.maxScorpionStacks,
+      scorpionLegendary: this.legendary && this.type === 'scorpion',
+      isCurse: this.isCurse,
+      curseFactor: this.curseFactor,
+      curseDuration: this.curseDuration,
+      curseLegendary: this.legendary && this.type === 'obelisk',
+      fireLegendary: this.legendary && this.type === 'torch',
+      catBurn: cm.catBurn || (this.legendary && this.type === 'catapult'),
     };
   }
 
   update(enemies) {
-    if (this.isMine || this.isAura) return null;
+    if (this.isMine || this.isAura || this.isSnakeCharmer) return null;
+
+    // ── Guard tower (melee block) ────────────────────────────────────────────
+    if (this.isGuard) {
+      if (this.cooldown > 0) { this.cooldown--; return null; }
+      const effRange = Math.floor(this.range * this.comboMult.range);
+      const toBlock = [];
+      enemies.forEach(e => {
+        if (e.dead || e.reached || e.air || e.blocked) return;
+        const dx = e.x - this.x, dy = e.y - this.y;
+        if (Math.sqrt(dx*dx+dy*dy) <= effRange) toBlock.push(e);
+      });
+      if (toBlock.length === 0) return null;
+      // Повернуться к ближайшему врагу из захваченных
+      const nearest = toBlock.reduce((a, b) => {
+        const da = (a.x-this.x)**2+(a.y-this.y)**2;
+        const db = (b.x-this.x)**2+(b.y-this.y)**2;
+        return da < db ? a : b;
+      });
+      this.angle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
+      this.cooldown = Math.max(5, Math.round(this.fireRate * this.comboMult.fireRate));
+      const mapDmg = this.game?.mapDamageMult || 1;
+      const dmg = Math.round(this.damage * this.comboMult.damage * mapDmg);
+      const blockDur = this.guardBlockDuration;
+      const sealFactor = this.legendary ? 3 : 1;
+      toBlock.forEach(e => { e.takeDamage(dmg); e.applyBlock(blockDur, sealFactor); });
+      return null;
+    }
+
+    // ── Sun Mirror (beam) ────────────────────────────────────────────────────
+    if (this.isSunMirror) {
+      if (this.cooldown > 0) { this.cooldown--; return null; }
+      const effRange = Math.floor(this.range * this.comboMult.range);
+      let primary = null, bestP = -1;
+      enemies.forEach(e => {
+        if (e.dead || e.reached || e.air || e.invis) return;
+        const dx = e.x - this.x, dy = e.y - this.y;
+        if (Math.sqrt(dx*dx+dy*dy) > effRange) return;
+        const p = e.pathIndex + 0;
+        if (p > bestP) { bestP = p; primary = e; }
+      });
+      if (!primary) return null;
+      this.angle = Math.atan2(primary.y - this.y, primary.x - this.x);
+      this.cooldown = Math.max(5, Math.round(this.fireRate * this.comboMult.fireRate));
+      const mapDmg  = this.game?.mapDamageMult || 1;
+      const baseDmg = Math.round(this.damage * this.comboMult.damage * mapDmg);
+      const decay   = this.mirrorNoPenalty ? 1 : this.mirrorDmgDecay;
+      const sinA = Math.sin(this.angle), cosA = Math.cos(this.angle);
+      const hits = [];
+      let beamDmg = baseDmg;
+      const sorted = enemies
+        .filter(e => !e.dead && !e.reached && !e.air)
+        .sort((a,b) => {
+          const da = (a.x-this.x)*cosA + (a.y-this.y)*sinA;
+          const db = (b.x-this.x)*cosA + (b.y-this.y)*sinA;
+          return da - db;
+        });
+      sorted.forEach(e => {
+        const dx = e.x - this.x, dy = e.y - this.y;
+        const dot   = dx * cosA + dy * sinA;
+        const cross = Math.abs(dx * sinA - dy * cosA);
+        if (dot <= 0 || dot > effRange || cross > 18) return;
+        e.takeDamage(beamDmg, false);
+        if (this.legendary) e.applyBurn(e.maxHP * 0.03, 5);
+        if (this.comboMult.mirrorCurse) e.applyCurse(1.6, 6);
+        hits.push(e);
+        beamDmg = Math.round(beamDmg * decay);
+      });
+      return new BeamEffect(this.x, this.y, this.angle, effRange, hits);
+    }
+
     if (this.cooldown > 0) { this.cooldown--; return null; }
 
     let best = null, bestProgress = -1;
@@ -812,12 +1300,36 @@ class Tower {
     if (this.type === 'lightning' || def.chainTargets > 0) {
       return new ChainBullet(this.x, this.y, best, def, def.chainTargets, enemies);
     }
+    // Катапульта: дуговой снаряд
+    if (this.isArc) {
+      this.shotCount = (this.shotCount || 0) + 1;
+      const fireShot = (this.legendary && this.shotCount % 4 === 0);
+      const arcDef = { ...def, fireShot, burnPct: fireShot ? 0.03 : 0, burnDuration: 4, bulletSpeed: TOWER_DEFS.catapult.bulletSpeed };
+      return new ArcBullet(this.x, this.y, best, arcDef, this.splashRadius);
+    }
     return new Bullet(this.x, this.y, best, def, this.type, this.splashRadius);
   }
 
   updateAura(dt, enemies) {
     if (!this.isAura) return;
     const effRange = Math.floor(this.range * this.comboMult.range);
+
+    if (this.isSandstorm) {
+      // Аура пустынного вихря: замедление + урон/сек
+      const mapDmg = this.game?.mapDamageMult || 1;
+      const dps = this.sandstormDps * mapDmg;
+      enemies.forEach(e => {
+        if (e.dead || e.reached) return;
+        const dx = e.x - this.x, dy = e.y - this.y;
+        if (Math.sqrt(dx*dx + dy*dy) <= effRange) {
+          e.applySlow(this.sandstormSlowFactor, 0.15);
+          e.takeDamage(dps * dt);
+        }
+      });
+      return;
+    }
+
+    // Стандартная аура (башня Времени)
     enemies.forEach(e => {
       if (e.dead || e.reached) return;
       const dx = e.x - this.x, dy = e.y - this.y;
@@ -825,6 +1337,30 @@ class Tower {
         e.applySlow(this.auraSlowFactor, 0.12);
       }
     });
+  }
+
+  // Специальный апдейт для башен карты 2 (вызывается из game.js)
+  updateMap2(dt, enemies, path) {
+    if (!this.isSnakeCharmer) return null;
+    this._snakeTimer += dt;
+    if (this._snakeTimer < this.snakeInterval) return null;
+    if (this._activeSnakeCount >= this.maxSnakes) return null;
+    this._snakeTimer = 0;
+    // Находим ближайшую точку пути
+    let closest = 0, closestDist = Infinity;
+    path.forEach((pt, i) => {
+      const dx = pt.x - this.x, dy = pt.y - this.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < closestDist) { closestDist = d; closest = i; }
+    });
+    const snakeDef = {
+      snakeDamage: this.snakeDamage,
+      snakePoisonPct: this.snakePoisonPct,
+      snakePoisonDuration: this.snakePoisonDuration,
+      snakeDistance: this.snakeDistance,
+      poisonExplode: this.legendary,
+    };
+    return new Snake(path, closest, snakeDef);
   }
 
   draw(ctx) {
@@ -911,14 +1447,23 @@ function drawTower(ctx, type, cx, cy, level, angle) {
     if (gc) { ctx.shadowColor = gc; ctx.shadowBlur = 14; }
   }
   switch (type) {
-    case 'basic':     _drawBasic(ctx, level, angle);     break;
-    case 'sniper':    _drawSniper(ctx, level, angle);    break;
-    case 'explosion': _drawExplosion(ctx, level, angle); break;
-    case 'slow':      _drawSlow(ctx, level, angle);      break;
-    case 'antiair':   _drawAntiAir(ctx, level, angle);  break;
-    case 'mine':      _drawMine(ctx, level);             break;
-    case 'lightning': _drawLightning(ctx, level, angle); break;
-    case 'time':      _drawTime(ctx, level);             break;
+    case 'basic':        _drawBasic(ctx, level, angle);        break;
+    case 'sniper':       _drawSniper(ctx, level, angle);       break;
+    case 'explosion':    _drawExplosion(ctx, level, angle);    break;
+    case 'slow':         _drawSlow(ctx, level, angle);         break;
+    case 'antiair':      _drawAntiAir(ctx, level, angle);      break;
+    case 'mine':         _drawMine(ctx, level);                break;
+    case 'lightning':    _drawLightning(ctx, level, angle);    break;
+    case 'time':         _drawTime(ctx, level);                break;
+    // Map 2
+    case 'torch':        _drawTorch(ctx, level, angle);        break;
+    case 'catapult':     _drawCatapult(ctx, level, angle);     break;
+    case 'scorpion':     _drawScorpion(ctx, level, angle);     break;
+    case 'sandstorm':    _drawSandstorm(ctx, level);           break;
+    case 'tombguard':    _drawTombGuard(ctx, level, angle);    break;
+    case 'obelisk':      _drawObelisk(ctx, level);             break;
+    case 'snakecharmer': _drawSnakeCharmer(ctx, level);        break;
+    case 'sunmirror':    _drawSunMirror(ctx, level, angle);    break;
   }
   ctx.shadowBlur = 0;
   ctx.restore();
@@ -1152,4 +1697,277 @@ function _drawTime(ctx, level) {
     for(let i=0;i<3;i++){const a=i*Math.PI*2/3+now;C(Math.cos(a)*14,Math.sin(a)*14,2.5,'#d7bde2');}
     ctx.shadowBlur=0;
   }
+}
+
+// ─── Map 2 draw functions ─────────────────────────────────────────────────────
+
+function _drawTorch(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?12:10;
+  // Base — тёмно-оранжевый кирпич
+  R(-s,-s,s*2,s*2,level>=3?'#1a0800':'#4a1e00');
+  R(-s,-s,s,s,'#5a2800'); R(0,0,s,s,'#5a2800');
+  R(0,-s,s,s,'#4a1e00'); R(-s,0,s,s,'#4a1e00');
+  if(level>=1){ctx.strokeStyle='#e67e22';ctx.lineWidth=2;ctx.strokeRect(-s-1,-s-1,s*2+2,s*2+2);}
+  // Ствол факела
+  R(-2,-s-10,4,12,'#5a3a10');
+  // Огонь
+  const now=Date.now()*0.004;
+  const flicker=Math.sin(now)*2;
+  ctx.shadowColor='#e67e22'; ctx.shadowBlur=14;
+  ctx.fillStyle='#f39c12';
+  ctx.beginPath();
+  ctx.moveTo(-5,-s-10+flicker); ctx.quadraticCurveTo(0,-s-26,5,-s-10+flicker);
+  ctx.quadraticCurveTo(2,-s-14,0,-s-8); ctx.quadraticCurveTo(-2,-s-14,-5,-s-10+flicker);
+  ctx.fill();
+  ctx.fillStyle='#e74c3c'; ctx.shadowBlur=8;
+  ctx.beginPath();
+  ctx.moveTo(-3,-s-12+flicker); ctx.quadraticCurveTo(0,-s-22,3,-s-12+flicker);
+  ctx.quadraticCurveTo(0,-s-14,-3,-s-12+flicker); ctx.fill();
+  C(0,-s-8,2,'#fff9c4'); ctx.shadowBlur=0;
+  // Ствол орудия
+  ctx.save(); ctx.rotate(angle);
+  if(level>=2){R(0,-4,s+4,8,'#3a1a00');}
+  R(0,-3,s+6,6,'#d35400'); R(s+2,-4,5,8,'#b23a00');
+  ctx.restore();
+}
+
+function _drawCatapult(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?12:10;
+  // Деревянная платформа
+  R(-s,-s*0.7,s*2,s*1.4,level>=3?'#1a0e00':'#3d2800');
+  R(-s,-s*0.7,s,s*0.7,'#4a3210'); R(0,0,s,s*0.7,'#4a3210');
+  if(level>=1){ctx.strokeStyle='#c8922a';ctx.lineWidth=2;ctx.strokeRect(-s-1,-s*0.7-1,s*2+2,s*1.4+2);}
+  // Колёса
+  ctx.strokeStyle='#5a3a10'; ctx.lineWidth=2;
+  [-s+3,s-3].forEach(wx=>{
+    ctx.fillStyle='#2a1800'; ctx.beginPath(); ctx.arc(wx,s*0.7-3,4,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#8b6014'; ctx.beginPath(); ctx.arc(wx,s*0.7-3,4,0,Math.PI*2); ctx.stroke();
+  });
+  // Рычаг катапульты (вращается)
+  ctx.save(); ctx.rotate(angle - Math.PI/4);
+  ctx.strokeStyle='#6b4226'; ctx.lineWidth=4; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-s-8); ctx.stroke();
+  // Ковш со снарядом
+  ctx.fillStyle='#7f8c8d'; ctx.shadowColor='#666'; ctx.shadowBlur=4;
+  ctx.beginPath(); ctx.arc(0,-s-8,5,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.restore();
+  C(0,0,4,'#8b6014');
+}
+
+function _drawScorpion(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?11:9;
+  // Основание — жёлто-коричневый
+  R(-s,-s,s*2,s*2,level>=3?'#1a1000':'#3a2800');
+  R(-s,-s,s,s,'#4a3400'); R(0,0,s,s,'#4a3400');
+  R(0,-s,s,s,'#3a2800'); R(-s,0,s,s,'#3a2800');
+  if(level>=1){ctx.strokeStyle='#8dde26';ctx.lineWidth=2;ctx.strokeRect(-s-1,-s-1,s*2+2,s*2+2);}
+  // Тело скорпиона
+  ctx.fillStyle='#b7950b'; ctx.shadowColor='#8dde26'; ctx.shadowBlur=6;
+  ctx.beginPath(); ctx.ellipse(0,2,7,5,0,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  // Клешни
+  ctx.strokeStyle='#b7950b'; ctx.lineWidth=2;
+  [[-8,-4],[ 8,-4]].forEach(([cx])=>{
+    ctx.beginPath(); ctx.moveTo(cx*0.5,-2); ctx.lineTo(cx,-4); ctx.stroke();
+    C(cx,-4,2.5,'#9a7d0a');
+  });
+  // Хвост с жалом (изогнутый вверх)
+  const now=Date.now()*0.003;
+  const sw=Math.sin(now)*1.5;
+  ctx.strokeStyle='#b7950b'; ctx.lineWidth=2.5; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(0,4); ctx.quadraticCurveTo(6+sw,2,8+sw,-6);
+  ctx.quadraticCurveTo(9+sw,-12,4+sw,-16); ctx.stroke();
+  ctx.fillStyle='#8dde26'; ctx.shadowColor='#8dde26'; ctx.shadowBlur=8;
+  ctx.beginPath(); ctx.arc(4+sw,-16,3,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  // Прицел
+  ctx.save(); ctx.rotate(angle);
+  if(level>=2){R(0,-3,s+4,6,'#2a1800');}
+  R(0,-2,s+6,4,'#8dde26'); R(s+2,-3,4,6,'#5aa010');
+  ctx.restore();
+}
+
+function _drawSandstorm(ctx, level) {
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?12:10;
+  // Круглое основание
+  ctx.fillStyle=level>=3?'#1a1200':'#3a2c10';
+  ctx.beginPath(); ctx.arc(0,0,s,0,Math.PI*2); ctx.fill();
+  if(level>=1){ctx.strokeStyle='#c8a060';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,s+1,0,Math.PI*2);ctx.stroke();}
+  // Внутренний узор — спираль
+  ctx.strokeStyle='#a07840'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(0,0,s-3,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.stroke();
+  // Вращающиеся песчаные частицы
+  const now=Date.now()*0.0025;
+  ctx.shadowColor='#c8a060'; ctx.shadowBlur=8;
+  for(let i=0;i<(level>=2?6:4);i++){
+    const a=i*Math.PI*2/(level>=2?6:4)+now*(i%2===0?1:-1.3);
+    const r=level>=2?s+3:s+2;
+    C(Math.cos(a)*r,Math.sin(a)*r,level>=3?3:2,'#c8a060');
+  }
+  ctx.shadowBlur=0;
+  // Центр
+  ctx.fillStyle='#d4b870'; ctx.shadowColor='#d4b870'; ctx.shadowBlur=10;
+  ctx.beginPath(); ctx.moveTo(0,-6); ctx.lineTo(4,3); ctx.lineTo(-4,3); ctx.closePath(); ctx.fill();
+  ctx.shadowBlur=0;
+}
+
+function _drawTombGuard(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?11:9;
+  // Тёмное каменное основание
+  R(-s,-s,s*2,s*2,level>=3?'#0d0800':'#2a2000');
+  R(-s,-s,s,s,'#362a10'); R(0,0,s,s,'#362a10');
+  R(0,-s,s,s,'#2a2000'); R(-s,0,s,s,'#2a2000');
+  if(level>=1){ctx.strokeStyle='#d4a520';ctx.lineWidth=2;ctx.strokeRect(-s-1,-s-1,s*2+2,s*2+2);}
+  // Тело стражника — золотые доспехи
+  ctx.fillStyle='#a07800'; ctx.beginPath();ctx.ellipse(0,4,6,8,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#d4a520';
+  ctx.beginPath(); ctx.moveTo(-5,2); ctx.lineTo(5,2); ctx.lineTo(4,12); ctx.lineTo(-4,12); ctx.fill();
+  // Шлем
+  ctx.fillStyle='#b8940a';
+  ctx.beginPath(); ctx.arc(0,-4,7,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#d4a520'; R(-7,-6,14,4,'#d4a520');
+  // Гребень шлема
+  ctx.fillStyle='#e74c3c'; R(-1,-12,2,8,'#e74c3c');
+  // Глаза
+  ctx.fillStyle='#fff'; C(-2.5,-5,1.5,'#fff'); C(2.5,-5,1.5,'#fff');
+  ctx.fillStyle='#000'; C(-2.5,-5,0.8,'#000'); C(2.5,-5,0.8,'#000');
+  // Копьё
+  ctx.save(); ctx.rotate(angle);
+  ctx.strokeStyle='#7d5a2c'; ctx.lineWidth=2.5; ctx.lineCap='butt';
+  ctx.beginPath(); ctx.moveTo(4,-2); ctx.lineTo(s+10,-2); ctx.stroke();
+  ctx.fillStyle='#bdc3c7'; ctx.shadowColor='#bdc3c7'; ctx.shadowBlur=6;
+  ctx.beginPath(); ctx.moveTo(s+8,-4); ctx.lineTo(s+14,-2); ctx.lineTo(s+8,0); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function _drawObelisk(ctx, level) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  // Основание обелиска
+  R(-8,8,16,6,level>=3?'#1a1000':'#3a2c00');
+  R(-6,4,12,5,'#4a3a00');
+  // Столп — сужающийся к верху
+  ctx.fillStyle='#c8a020';
+  ctx.beginPath();
+  ctx.moveTo(-7,9); ctx.lineTo(-5,-10); ctx.lineTo(5,-10); ctx.lineTo(7,9);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#d4b030';
+  ctx.beginPath();
+  ctx.moveTo(-7,9); ctx.lineTo(-5,-10); ctx.lineTo(-2,-10); ctx.lineTo(-1,9);
+  ctx.closePath(); ctx.fill();
+  // Иероглифы
+  if(level>=1){
+    ctx.strokeStyle='#5a2a80'; ctx.lineWidth=1;
+    [[-3,-2],[-3,2],[-3,6]].forEach(([hx,hy])=>{
+      ctx.beginPath(); ctx.moveTo(hx,hy); ctx.lineTo(hx+6,hy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(hx+3,hy-2); ctx.lineTo(hx+3,hy+2); ctx.stroke();
+    });
+  }
+  // Кончик — фиолетовое свечение
+  ctx.fillStyle='#c8a020';
+  ctx.beginPath(); ctx.moveTo(-5,-10); ctx.lineTo(0,-18); ctx.lineTo(5,-10); ctx.fill();
+  const now=Date.now()*0.003;
+  const pulse=0.7+Math.sin(now)*0.3;
+  ctx.shadowColor='#9b59b6'; ctx.shadowBlur=14*pulse; ctx.fillStyle='#b39ddb';
+  ctx.beginPath(); ctx.arc(0,-14,3*pulse,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  if(level>=2){
+    for(let i=0;i<4;i++){
+      const a=i*Math.PI/2+now*0.5;
+      C(Math.cos(a)*10,Math.sin(a)*10+0,1.5,'rgba(180,120,255,0.6)');
+    }
+  }
+}
+
+function _drawSnakeCharmer(ctx, level) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  // Корзина/горшок
+  ctx.fillStyle=level>=3?'#1a0e00':'#3d2800';
+  ctx.beginPath();
+  ctx.moveTo(-10,10); ctx.lineTo(-12,0); ctx.arc(0,0,12,Math.PI,0); ctx.lineTo(10,10);
+  ctx.quadraticCurveTo(0,14,-10,10); ctx.fill();
+  ctx.fillStyle='#6b4226';
+  ctx.beginPath(); ctx.ellipse(0,0,12,4,0,0,Math.PI*2); ctx.fill();
+  // Плетёный узор
+  if(level>=1){
+    ctx.strokeStyle='#8b5e3c'; ctx.lineWidth=1;
+    for(let i=0;i<4;i++){
+      ctx.beginPath();
+      ctx.moveTo(-12+i*6,0); ctx.lineTo(-10+i*6,10); ctx.stroke();
+    }
+  }
+  // Змея
+  const now=Date.now()*0.004;
+  const wave=Math.sin(now)*3;
+  ctx.shadowColor='#27ae60'; ctx.shadowBlur=8;
+  // Тело
+  ctx.strokeStyle='#2ecc71'; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(0,-1); ctx.quadraticCurveTo(wave,-8,2,-16); ctx.stroke();
+  ctx.strokeStyle='#1e8449'; ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(0,-1); ctx.quadraticCurveTo(wave,-8,2,-16); ctx.stroke();
+  // Голова
+  ctx.fillStyle='#27ae60';
+  ctx.beginPath(); ctx.ellipse(2+wave,-18,5,4,0.3,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#f1c40f';
+  C(4+wave,-20,1.5,'#f1c40f'); C(0+wave,-20,1.5,'#f1c40f');
+  // Язык
+  ctx.strokeStyle='#e74c3c'; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(5+wave,-18); ctx.lineTo(9+wave,-17);
+  ctx.moveTo(5+wave,-18); ctx.lineTo(9+wave,-19); ctx.stroke();
+}
+
+function _drawSunMirror(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?10:8;
+  // Основание
+  R(-s,-s,s*2,s*2,level>=3?'#1a1400':'#3a2c00');
+  if(level>=1){ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(-s-1,-s-1,s*2+2,s*2+2);}
+  C(0,0,4,'#c8a020');
+  // Зеркало (вращается к цели)
+  ctx.save(); ctx.rotate(angle);
+  const now=Date.now()*0.003;
+  // Рама зеркала
+  ctx.strokeStyle='#d4ac0d'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(s+5,0,7,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='#fffaaa'; ctx.globalAlpha=0.85;
+  ctx.beginPath(); ctx.arc(s+5,0,6,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+  // Ручка зеркала
+  R(s-2,-2,6,4,'#b8940a');
+  // Солнечный луч — пульсирующий
+  const glow=0.3+Math.sin(now)*0.15;
+  ctx.shadowColor='#f1c40f'; ctx.shadowBlur=20*glow;
+  ctx.strokeStyle=`rgba(255,250,150,${glow+0.4})`; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(s+12,0); ctx.lineTo(s+22,0); ctx.stroke();
+  ctx.shadowBlur=0;
+  if(level>=2){
+    // Солнечная корона
+    for(let i=0;i<6;i++){
+      const a=(i/6)*Math.PI*2+now;
+      ctx.strokeStyle='rgba(255,220,50,0.5)'; ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(s+5+Math.cos(a)*7, Math.sin(a)*7);
+      ctx.lineTo(s+5+Math.cos(a)*11, Math.sin(a)*11); ctx.stroke();
+    }
+  }
+  ctx.restore();
 }

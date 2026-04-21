@@ -964,6 +964,10 @@ class Enemy {
     this.invisTimer      = 0;
     this.ksaraSummonTimer = (type === 'ksara') ? 15.0 : 0;
     this.posHistory      = [];         // Малькар: след движения
+    // ── Map 2 mechanics ───────────────────────────────────────────────────────
+    this.blocked       = false; this.blockTimer = 0; this.blockedFactor = 1;
+    this.cursed        = false; this.curseTimer = 0; this.curseFactor   = 1;
+    this.scorpionStacks = 0;    this.scorpionStackTimer = 0;
   }
 
   update(dt) {
@@ -1060,6 +1064,19 @@ class Enemy {
       if (this.slowTimer <= 0) this.slowFactor = 1;
     }
 
+    // ── Map 2 DoTs / states ───────────────────────────────────────────────────
+    if (this.scorpionStacks > 0) {
+      this.scorpionStackTimer -= dt;
+      if (this.scorpionStackTimer <= 0) { this.scorpionStacks = 0; }
+      else { this.takeDamage(this.scorpionStacks * 0.02 * this.maxHP * dt, true); if (this.dead) return; }
+    }
+    if (this.cursed) { this.curseTimer -= dt; if (this.curseTimer <= 0) { this.cursed = false; this.curseFactor = 1; } }
+    if (this.blocked) {
+      this.blockTimer -= dt;
+      if (this.blockTimer <= 0) { this.blocked = false; this.blockedFactor = 1; }
+      return; // skip movement while blocked
+    }
+
     const spd = this.speed * this.slowFactor;
 
     if (this.pathIndex >= this.path.length - 1) {
@@ -1114,17 +1131,31 @@ class Enemy {
   }
 
   takeDamage(dmg, armorPierce = false) {
-    // Броня: блокирует % входящего урона
     const armorBlock = armorPierce ? 0 : dmg * this.armor;
     dmg -= armorBlock;
-    // Элитный щит: поглощает 50% первые 5 секунд
     if (this.eliteShieldTimer > 0) dmg *= 0.5;
+    if (this.cursed)                dmg *= this.curseFactor;
+    if (this.blocked && this.blockedFactor > 1) dmg *= this.blockedFactor;
     this.lastArmorBlock = armorBlock;
     this.hp -= dmg;
-    if (this.hp <= 0) {
-      this.hp = 0;
-      this.dead = true;
-    }
+    if (this.hp <= 0) { this.hp = 0; this.dead = true; }
+  }
+
+  applyBlock(duration, damageFactor = 1) {
+    this.blocked      = true;
+    this.blockTimer   = Math.max(this.blockTimer, duration);
+    this.blockedFactor= Math.max(this.blockedFactor, damageFactor);
+  }
+
+  applyCurse(factor, duration) {
+    this.cursed      = true;
+    this.curseFactor = Math.max(this.curseFactor, factor);
+    this.curseTimer  = Math.max(this.curseTimer, duration);
+  }
+
+  applyScorpionStack(maxStacks, resetDuration) {
+    this.scorpionStacks     = Math.min((this.scorpionStacks || 0) + 1, maxStacks);
+    this.scorpionStackTimer = resetDuration;
   }
 
   draw(ctx) {

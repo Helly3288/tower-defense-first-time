@@ -80,7 +80,10 @@ const EVENTS = [
 ];
 
 // ─── Налог на содержание башен (g / волна) ─────────────────────────────────
-const MAINTENANCE = { basic: 2, sniper: 4, explosion: 3, slow: 2, antiair: 3, mine: 1, lightning: 5, time: 6 };
+const MAINTENANCE = {
+  basic: 2, sniper: 4, explosion: 3, slow: 2, antiair: 3, mine: 1, lightning: 5, time: 6,
+  torch: 2, catapult: 3, scorpion: 3, sandstorm: 4, tombguard: 4, obelisk: 5, snakecharmer: 5, sunmirror: 6,
+};
 
 class LightningBallEffect {
   constructor(pathPoints) {
@@ -190,6 +193,7 @@ class Game {
 
     this.lightningBalls      = [];
     this.radiationZones      = [];
+    this.snakes              = [];
     this._unlockNotified     = new Set();
     this.paused              = false;
     this._timeFreezeGlobalCD = 0;
@@ -317,6 +321,7 @@ class Game {
 
   applyMap(mapDef) {
     if (typeof GameAudio !== 'undefined') GameAudio.startMap(mapDef.id);
+    if (this.ui) this.ui.switchPanel(mapDef.id);
     this.currentMap    = mapDef;
     this.pathCoords    = mapDef.coords;
     this.pathSet       = new Set(mapDef.coords.map(([c,r]) => `${c},${r}`));
@@ -326,6 +331,7 @@ class Game {
     this.mapDamageMult = mapDef.damageMult;
     this.mapEnemyMult  = mapDef.enemyMult;
     this.expertMode    = mapDef.expertMode;
+    this.gold          = mapDef.startGold ?? 200;
     this.initMap();
     this._initGate();
   }
@@ -335,12 +341,6 @@ class Game {
     const mapDef = MAP_DEFS[mapNum - 1];
     if (!mapDef) return;
 
-    // Сохранить прогресс: карта (mapNum-1) пройдена → mapNum разблокирована
-    const prev = parseInt(localStorage.getItem('tdMapCompleted') || '0');
-    if (mapNum - 1 > prev) {
-      localStorage.setItem('tdMapCompleted', String(mapNum - 1));
-    }
-
     // Сбросить игровое состояние
     this.towers              = [];
     this.enemies             = [];
@@ -348,9 +348,10 @@ class Game {
     this.particles           = [];
     this.lightningBalls      = [];
     this.radiationZones      = [];
+    this.snakes              = [];
     this.deathStains         = [];
     this.gateLabels          = [];
-    this.gold                = 200;
+    this.gold                = mapDef.startGold ?? 200;
     this.lives               = 25;
     this.wave                = 0;
     this.score               = 0;
@@ -475,6 +476,13 @@ class Game {
     return this.towers.reduce((sum, t) => sum + (MAINTENANCE[t.type] || 0), 0);
   }
 
+  _enemyGold(e) {
+    const base = e._raidReward ? e.reward * 2 : e.reward;
+    const cap  = this.currentMap?.bossGoldCap;
+    if (cap && e.isBoss) return e._raidReward ? cap * 2 : cap;
+    return Math.round(base * this.mapGoldMult);
+  }
+
   spawnEnemies(dt) {
     if (!this.waveInProgress) return;
     this.spawnTimer += dt * 60;
@@ -510,7 +518,9 @@ class Game {
       this.freezeActive = false;
       this.raidActive   = false;
 
-      const bonus = 5 + this.wave * 3;
+      const bonus = this.currentMap?.id === 'gorge'
+        ? 25 + this.wave * 8
+        : 5 + this.wave * 3;
       this.gold += bonus;
       this.score += this.wave * 50;
       const mineGold = this.towers.filter(t => t.isMine).reduce((s, t) => s + t.mineIncome, 0);
@@ -645,13 +655,46 @@ class Game {
       t.updateAura(dt, this.enemies);
       const bullet = t.update(this.enemies);
       if (bullet) {
-        if (this.furyActive)               bullet.damage = Math.round(bullet.damage * 1.5);
-        if (this.plagueWavesLeft > 0)      bullet.damage = Math.round(bullet.damage * 0.75);
-        if (this.towerDamageDebuffTimer > 0) bullet.damage = Math.round(bullet.damage * 0.7);
+        if (!(bullet instanceof BeamEffect)) {
+          if (this.furyActive)                bullet.damage = Math.round(bullet.damage * 1.5);
+          if (this.plagueWavesLeft > 0)       bullet.damage = Math.round(bullet.damage * 0.75);
+          if (this.towerDamageDebuffTimer > 0) bullet.damage = Math.round(bullet.damage * 0.7);
+        }
         this.bullets.push(bullet);
       }
       const special = t.updateLegendary(dt, this.enemies, this.path, this._timeFreezeGlobalCD);
       if (special) this._handleLegendaryEffect(special);
+      // Map 2 specials (snake charmer)
+      const snake = t.updateMap2(dt, this.enemies, this.path);
+      if (snake) {
+        snake.activeSnakesRef = t; // for tracking count
+        t._activeSnakeCount = (t._activeSnakeCount || 0) + 1;
+        this.snakes.push(snake);
+      }
+    });
+
+    // Update snakes (map 2 snake charmer)
+    this.snakes = this.snakes.filter(sn => {
+      const hits = sn.update(dt, this.enemies);
+      hits.forEach(e => {
+        if (e.dead) {
+          this.gold  += this._enemyGold(e);
+          this.score += e.reward * 2;
+          this.spawnParticles(e.x, e.y, '#2ecc71');
+          this.deathStains.push({ x: e.x, y: e.y, r: e.size * 2, life: 180, maxLife: 180 });
+          this.achievements.onEnemyKilled(e);
+          // Snake charmer legendary: poison explosion on kill
+          if (sn.poisonExplode) {
+            this.enemies.forEach(near => {
+              if (near === e || near.dead || near.reached) return;
+              const dx = near.x - e.x, dy = near.y - e.y;
+              if (Math.sqrt(dx*dx+dy*dy) <= 54) near.applyPoison(near.maxHP * 0.04, 3);
+            });
+          }
+        }
+      });
+      if (sn.dead && sn.activeSnakesRef) sn.activeSnakesRef._activeSnakeCount = Math.max(0, (sn.activeSnakesRef._activeSnakeCount || 1) - 1);
+      return !sn.dead;
     });
 
     // Update lightning balls
@@ -659,7 +702,7 @@ class Game {
       const hits = lb.update(this.enemies);
       hits.forEach(e => {
         if (e.dead) {
-          this.gold  += Math.round((e._raidReward ? e.reward * 2 : e.reward) * this.mapGoldMult);
+          this.gold  += this._enemyGold(e);
           this.score += e.reward * 2;
           this.spawnParticles(e.x, e.y, '#f1c40f');
           this.deathStains.push({ x: e.x, y: e.y, r: e.size * 2, life: 180, maxLife: 180 });
@@ -679,7 +722,7 @@ class Game {
           e.lastArmorBlock = 0;
         }
         if (e.dead) {
-          const reward = Math.round((e._raidReward ? e.reward * 2 : e.reward) * this.mapGoldMult);
+          const reward = this._enemyGold(e);
           this.gold += reward;
           this.score += reward * 2;
           this.spawnParticles(e.x, e.y, e.color || '#aaa');
@@ -694,6 +737,37 @@ class Game {
             if (Math.sqrt(dx*dx + dy*dy) <= 36) near.applyPoison(e.poisonDps, 5);
           });
         }
+        // Факельник легендарный: огонь распространяется на соседей в 1 клетке
+        if (b.fireLegendary && !e.dead && e.burnTimer > 0) {
+          this.enemies.forEach(near => {
+            if (near === e || near.dead || near.reached) return;
+            const dx = near.x - e.x, dy = near.y - e.y;
+            if (Math.sqrt(dx*dx + dy*dy) <= 36) near.applyBurn(e.burnDps, 3);
+          });
+        }
+        // Обелиск легендарный: проклятие на всех в 2 клетках от цели
+        if (b.curseLegendary && !e.dead) {
+          this.enemies.forEach(near => {
+            if (near === e || near.dead || near.reached) return;
+            const dx = near.x - e.x, dy = near.y - e.y;
+            if (Math.sqrt(dx*dx + dy*dy) <= 72) near.applyCurse(b.curseFactor || 1.6, b.curseDuration || 8);
+          });
+        }
+        // Скорпион: добавить стак яда
+        if (b.isScorpion && !e.dead) {
+          e.applyScorpionStack(b.maxScorpionStacks || 5, 3);
+          if (b.scorpionLegendary && e.scorpionStacks >= (b.maxScorpionStacks || 5)) {
+            this.enemies.forEach(near => {
+              if (near === e || near.dead || near.reached) return;
+              const dx = near.x - e.x, dy = near.y - e.y;
+              if (Math.sqrt(dx*dx + dy*dy) <= 36) {
+                near.applyPoison(near.maxHP * 0.02, 3);
+                near.applyScorpionStack(b.maxScorpionStacks || 5, 3);
+              }
+            });
+            this.spawnParticles(e.x, e.y, '#8dde26');
+          }
+        }
       });
       // Аннигилятор: создать зону излучения на месте попадания
       if (b._zonePos) {
@@ -707,7 +781,7 @@ class Game {
       const zhits = z.update(dt, this.enemies);
       zhits.forEach(e => {
         if (e.dead) {
-          this.gold  += Math.round((e._raidReward ? e.reward * 2 : e.reward) * this.mapGoldMult);
+          this.gold  += this._enemyGold(e);
           this.score += e.reward * 2;
           this.spawnParticles(e.x, e.y, '#9b59b6');
           this.deathStains.push({ x: e.x, y: e.y, r: e.size * 2, life: 180, maxLife: 180 });
@@ -841,6 +915,7 @@ class Game {
     this.enemies.filter(e => !e.air).forEach(e => e.draw(ctx));
     this.bullets.forEach(b => b.draw(ctx));
     this.lightningBalls.forEach(lb => lb.draw(ctx));
+    this.snakes.forEach(sn => sn.draw(ctx));
     this.enemies.filter(e => e.air).forEach(e => e.draw(ctx));
     // Exit gate — themed per map
     if (typeof MAP_DRAW_EXIT !== 'undefined' && MAP_DRAW_EXIT[this.currentMap?.id]) {
@@ -1840,7 +1915,7 @@ class Game {
   _handleLegendaryEffect(eff) {
     eff.hits.forEach(e => {
       if (e.dead) {
-        this.gold  += Math.round((e._raidReward ? e.reward * 2 : e.reward) * this.mapGoldMult);
+        this.gold  += this._enemyGold(e);
         this.score += e.reward * 2;
         this.spawnParticles(e.x, e.y, eff.type === 'orbital' ? '#00ccff' : '#ff4500');
         this.deathStains.push({ x: e.x, y: e.y, r: e.size * 2, life: 180, maxLife: 180 });
