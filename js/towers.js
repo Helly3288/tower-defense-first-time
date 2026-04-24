@@ -96,7 +96,7 @@ const TOWER_DEFS = {
 // ─── Map 2 tower definitions ──────────────────────────────────────────────────
 Object.assign(TOWER_DEFS, {
   torch: {
-    name: 'Факельник', cost: 100, mapOnly: 'gorge',
+    name: 'Факельник', cost: 100, maxHP: 100, mapOnly: 'gorge',
     color: '#d35400', accentColor: '#e67e22',
     damage: 15, range: 90, fireRate: 45,
     bulletColor: '#ff6b35', bulletSize: 5, bulletSpeed: 8,
@@ -110,7 +110,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Живой огонь', cost: 350, desc: 'Огонь перекидывается на врагов в радиусе 1 клетки' },
   },
   catapult: {
-    name: 'Катапульта', cost: 125, mapOnly: 'gorge',
+    name: 'Катапульта', cost: 125, maxHP: 130, mapOnly: 'gorge',
     color: '#6b4226', accentColor: '#8b5e3c',
     damage: 60, range: 126, fireRate: 180,
     bulletColor: '#7f8c8d', bulletSize: 8, bulletSpeed: 5,
@@ -125,7 +125,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Огненный камень', cost: 400, desc: 'Каждый 4-й выстрел поджигает всю область (3% maxHP/сек)' },
   },
   scorpion: {
-    name: 'Скорпион', cost: 150, mapOnly: 'gorge',
+    name: 'Скорпион', cost: 150, maxHP: 100, mapOnly: 'gorge',
     color: '#b7950b', accentColor: '#9a7d0a',
     damage: 8, range: 108, fireRate: 35,
     bulletColor: '#8dde26', bulletSize: 4, bulletSpeed: 9,
@@ -139,7 +139,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Смертельное жало', cost: 450, desc: 'При максимальных стаках враг взрывается ядом (радиус 1 клетки)' },
   },
   sandstorm: {
-    name: 'Песч. Вихрь', cost: 175, mapOnly: 'gorge',
+    name: 'Песч. Вихрь', cost: 175, maxHP: 120, mapOnly: 'gorge',
     color: '#c8a060', accentColor: '#a07840',
     damage: 0, range: 126, fireRate: 9999,
     bulletColor: '#c8a060', bulletSize: 0, bulletSpeed: 0,
@@ -154,7 +154,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Ока Пустыни', cost: 500, desc: 'Соседние башни (≤2 кл.) получают +30% урон' },
   },
   tombguard: {
-    name: 'Стражник', cost: 200, mapOnly: 'gorge',
+    name: 'Стражник', cost: 200, maxHP: 150, mapOnly: 'gorge',
     color: '#d4a520', accentColor: '#a07800',
     damage: 35, range: 108, fireRate: 300,
     bulletColor: '#d4a520', bulletSize: 4, bulletSpeed: 10,
@@ -168,7 +168,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Печать Гробницы', cost: 400, desc: 'Заблокированные враги получают ×3 урона от всех башен в радиусе 4 клеток' },
   },
   obelisk: {
-    name: 'Обелиск', cost: 225, mapOnly: 'gorge',
+    name: 'Обелиск', cost: 225, maxHP: 110, mapOnly: 'gorge',
     color: '#c8a020', accentColor: '#9b7800',
     damage: 5, range: 144, fireRate: 90,
     bulletColor: '#9b59b6', bulletSize: 5, bulletSpeed: 7,
@@ -182,7 +182,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Великое Проклятие', cost: 550, desc: 'Проклятие распространяется на всех врагов в 2 клетках от цели' },
   },
   snakecharmer: {
-    name: 'Заклинатель', cost: 250, mapOnly: 'gorge',
+    name: 'Заклинатель', cost: 250, maxHP: 100, mapOnly: 'gorge',
     color: '#27ae60', accentColor: '#1e8449',
     damage: 0, range: 0, fireRate: 9999,
     bulletColor: '#27ae60', bulletSize: 0, bulletSpeed: 0,
@@ -198,7 +198,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Взрыв яда', cost: 500, desc: 'Змеи взрываются ядом (4%/сек, 3 сек, радиус 1.5 кл.) при смерти врага' },
   },
   falconer: {
-    name: 'Соколятник', cost: 175, mapOnly: 'gorge',
+    name: 'Соколятник', cost: 175, maxHP: 90, mapOnly: 'gorge',
     color: '#8B5E3C', accentColor: '#5C3A1E',
     damage: 25, range: 180, fireRate: 50,
     bulletColor: '#c8843a', bulletSize: 5, bulletSpeed: 9,
@@ -212,7 +212,7 @@ Object.assign(TOWER_DEFS, {
     legendary: { name: 'Тройной охват', cost: 400, desc: 'Сокол атакует сразу 3 воздушных врага одновременно' },
   },
   sunmirror: {
-    name: 'Зеркало', cost: 300, mapOnly: 'gorge',
+    name: 'Зеркало', cost: 300, maxHP: 120, mapOnly: 'gorge',
     color: '#f1c40f', accentColor: '#d4ac0d',
     damage: 45, range: 180, fireRate: 80,
     bulletColor: '#fffaaa', bulletSize: 4, bulletSpeed: 20,
@@ -1090,6 +1090,11 @@ class Tower {
     this.mirrorDmgDecay   = def.mirrorDmgDecay   || 0.85;
     this.mirrorNoPenalty  = false;
 
+    // HP system (gorge map only — null means invulnerable)
+    this.maxHP      = def.maxHP ?? null;
+    this.hp         = this.maxHP;
+    this.flashTimer = 0;
+
     // Meta
     this.totalSpent  = def.cost;
     this.cooldown    = 0;
@@ -1153,6 +1158,12 @@ class Tower {
 
   getSellValue() { return Math.floor(this.totalSpent * 0.4); }
 
+  takeDamage(amount) {
+    if (this.maxHP === null) return;
+    this.hp = Math.max(0, this.hp - amount);
+    this.flashTimer = 12;
+  }
+
   buyLegendary() {
     const leg = TOWER_DEFS[this.type]?.legendary;
     if (!leg || this.legendary || !this.isMaxed()) return false;
@@ -1180,6 +1191,7 @@ class Tower {
   // Returns { type, x, y, hits, radius? } or null. Call once per frame from game.js.
   updateLegendary(dt, enemies, pathPoints, globalTimeFreezeCD = 0) {
     if (!this.legendary) return null;
+    if (this.maxHP !== null && this.hp <= 0) return null;
 
     if (this.type === 'explosion') {
       this.legendaryTimer -= dt;
@@ -1263,6 +1275,7 @@ class Tower {
 
   update(enemies) {
     if (this.isMine || this.isAura || this.isSnakeCharmer) return null;
+    if (this.maxHP !== null && this.hp <= 0) return null;
 
     // ── Guard tower (melee block) ────────────────────────────────────────────
     if (this.isGuard) {
@@ -1390,6 +1403,7 @@ class Tower {
 
   updateAura(dt, enemies) {
     if (!this.isAura) return;
+    if (this.maxHP !== null && this.hp <= 0) return;
     const effRange = Math.floor(this.range * this.comboMult.range);
 
     if (this.isSandstorm) {
@@ -1419,6 +1433,7 @@ class Tower {
   // Специальный апдейт для башен карты 2 (вызывается из game.js)
   updateMap2(dt, enemies, path) {
     if (!this.isSnakeCharmer) return null;
+    if (this.maxHP !== null && this.hp <= 0) return null;
     this._snakeTimer += dt;
     if (this._snakeTimer < this.snakeInterval) return null;
     if (this._activeSnakeCount >= this.maxSnakes) return null;
@@ -1477,7 +1492,33 @@ class Tower {
       }
     }
 
-    drawTower(ctx, this.type, this.x, this.y, this.upgradeLevel, this.angle);
+    if (this.maxHP !== null && this.hp <= 0) {
+      ctx.save(); ctx.globalAlpha = 0.35;
+      drawTower(ctx, this.type, this.x, this.y, this.upgradeLevel, this.angle);
+      ctx.restore();
+    } else {
+      drawTower(ctx, this.type, this.x, this.y, this.upgradeLevel, this.angle);
+    }
+
+    // Damage flash (red overlay, decrements once per draw)
+    if (this.flashTimer > 0) {
+      this.flashTimer--;
+      ctx.save();
+      ctx.globalAlpha = (this.flashTimer / 12) * 0.55;
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.cellSize * 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // HP bar (only when damaged)
+    if (this.maxHP !== null && this.hp < this.maxHP) {
+      const bw = 28, bh = 3, bx = this.x - 14, by = this.y + this.cellSize * 0.54;
+      const pct = this.hp / this.maxHP;
+      ctx.fillStyle = '#111';
+      ctx.fillRect(bx - 1, by - 1, bw + 2, bh + 2);
+      ctx.fillStyle = pct > 0.5 ? '#2ecc71' : pct > 0.25 ? '#f39c12' : '#e74c3c';
+      ctx.fillRect(bx, by, Math.round(bw * pct), bh);
+    }
 
     // Legendary golden ring
     if (this.legendary) {

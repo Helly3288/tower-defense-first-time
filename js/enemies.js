@@ -30,6 +30,8 @@ const ENEMY_DEFS = {
   ksara:  { name:'Ксара',           baseHP:3500, speed:0.9,  reward:0, startWave:60, size:24, isFinalBoss:true, armor:0.35, regenPct:2.0 },
   malkar: { name:'Малькар Истинный', baseHP:8000, speed:0.45, reward:0, startWave:60, size:36, isFinalBoss:true, armor:0.55, regenPct:2.0 },
   zarok:  { name:'Зарок',           baseHP:1500, speed:0.8,  reward:0, startWave:60, size:20, isFinalBoss:true, armor:0.30 },
+  // ── Gorge-only enemies ───────────────────────────────────────────────────────
+  lancer: { name:'Копьеносец', baseHP:68, speed:1.5, reward:11, startWave:3, size:10, mapOnly:'gorge', deathExplosion:{ damage:20, radius:36 } },
 };
 
 // HP scaling: +25% every 2 waves
@@ -751,6 +753,25 @@ function drawEnemySprite(ctx, type, size, tick, enemy) {
       ctx.beginPath(); ctx.moveTo(-20,2); ctx.lineTo(-24,-1); ctx.lineTo(-20,6); ctx.fill();
       break;
     }
+
+    case 'lancer': {
+      // Desert warrior with spear
+      const legOff = Math.sin(t * 1.8) * 2;
+      R(-3,-2,7,8,'#7d5a3c');       // body
+      C(1,-6,3.5,'#c8a882');        // head
+      R(-3,-8,7,4,'#5a3a1a');       // helmet
+      R(-4,-2,2,2,'#5a3a1a');       // left shoulder pad
+      R(5,-2,2,2,'#5a3a1a');        // right shoulder pad
+      // Spear
+      ctx.strokeStyle='#8b6914'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(4,-9); ctx.lineTo(4,12); ctx.stroke();
+      ctx.fillStyle='#d4ac0d';
+      ctx.beginPath(); ctx.moveTo(2,-9); ctx.lineTo(4,-17); ctx.lineTo(6,-9); ctx.closePath(); ctx.fill();
+      // Legs
+      R(-3,6,2,3+legOff,'#6b4226');
+      R(2,6,2,3-legOff,'#6b4226');
+      break;
+    }
   }
 }
 
@@ -1186,6 +1207,7 @@ function buildWave(wave, enemyMult = 1, mapId = 'ironhold') {
 
   const ground = Object.keys(ENEMY_DEFS).filter(
     k => k !== 'overlord' && !ENEMY_DEFS[k].air && !ENEMY_DEFS[k].isFinalBoss && ENEMY_DEFS[k].startWave <= wave
+    && (!ENEMY_DEFS[k].mapOnly || ENEMY_DEFS[k].mapOnly === mapId)
   );
   const air = Object.keys(ENEMY_DEFS).filter(
     k => ENEMY_DEFS[k].air && !ENEMY_DEFS[k].isFinalBoss && ENEMY_DEFS[k].startWave <= wave

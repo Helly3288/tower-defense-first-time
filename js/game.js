@@ -586,6 +586,15 @@ class Game {
       if (this.autoWaveCountdown <= 0) this.startWave();
     }
 
+    // Между волнами: автовосстановление башен 15% maxHP/сек (карта 2)
+    if (!this.waveInProgress && this.currentMap?.id === 'gorge') {
+      this.towers.forEach(t => {
+        if (t.maxHP !== null && t.hp < t.maxHP) {
+          t.hp = Math.min(t.maxHP, t.hp + t.maxHP * 0.15 * dt);
+        }
+      });
+    }
+
     this.spawnEnemies(dt);
 
     // Update enemies
@@ -801,6 +810,24 @@ class Game {
       this.enemies.forEach(e => {
         if (e.regen > 0 && e.hp < e.maxHP && !e.dead) {
           this.spawnRegenParticle(e.x, e.y);
+        }
+      });
+    }
+
+    // Копьеносец: взрыв при смерти (карта 2)
+    if (this.currentMap?.id === 'gorge') {
+      this.enemies.forEach(e => {
+        if (e.dead && !e._deathExplosionDone) {
+          const def = ENEMY_DEFS[e.type];
+          if (def?.deathExplosion) {
+            e._deathExplosionDone = true;
+            const { damage, radius } = def.deathExplosion;
+            this.towers.forEach(t => {
+              const dx = t.x - e.x, dy = t.y - e.y;
+              if (Math.sqrt(dx * dx + dy * dy) <= radius) t.takeDamage(damage);
+            });
+            this.spawnParticles(e.x, e.y, '#c0392b');
+          }
         }
       });
     }

@@ -269,6 +269,22 @@
     #upgradeTower:hover:not(:disabled) { background: #f39c12; }
     #upgradeTower:disabled { background: #444; color: #888; cursor: not-allowed; }
 
+    #repairTower {
+      display: none;
+      width: 100%;
+      padding: 7px;
+      background: #1a5276;
+      color: #fff;
+      border: 1px solid #2980b9;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    #repairTower:hover:not(:disabled) { background: #2980b9; }
+    #repairTower:disabled { background: #1c2d3a; color: #557; cursor: not-allowed; }
+
     #sellTower {
       width: 100%;
       padding: 7px;
@@ -986,6 +1002,7 @@
         </div>
 
         <button id="legendaryUpgrade">★ Легендарное</button>
+        <button id="repairTower">🔧 Починить</button>
         <button id="sellTower">Продать</button>
       </div>
 

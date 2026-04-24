@@ -85,6 +85,17 @@ class UI {
     const pauseBtn = document.getElementById('pauseBtn');
     if (pauseBtn) pauseBtn.addEventListener('click', () => this.game.togglePause());
 
+    // Repair button
+    document.getElementById('repairTower')?.addEventListener('click', () => {
+      const t = this.game.selectedTower;
+      if (!t || t.maxHP === null) return;
+      const cost = Math.round((1 - t.hp / t.maxHP) * t.totalSpent * 0.3);
+      if (this.game.gold < cost) { this.showMessage('Недостаточно золота!'); return; }
+      this.game.gold -= cost;
+      t.hp = t.maxHP;
+      this.updateUpgradePanel(t);
+    });
+
     // Speed buttons
     document.querySelectorAll('.speed-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -375,6 +386,20 @@ class UI {
 
     // Sell button
     document.getElementById('sellTower').textContent = `Продать (${tower.getSellValue()}g)`;
+
+    // Repair button (gorge map only)
+    const repairBtn = document.getElementById('repairTower');
+    if (repairBtn) {
+      const isGorge = this.game.currentMap?.id === 'gorge';
+      if (isGorge && tower.maxHP !== null && tower.hp < tower.maxHP) {
+        const cost = Math.round((1 - tower.hp / tower.maxHP) * tower.totalSpent * 0.3);
+        repairBtn.style.display = 'block';
+        repairBtn.textContent   = `🔧 Починить (${cost}g)`;
+        repairBtn.disabled      = this.game.gold < cost;
+      } else {
+        repairBtn.style.display = 'none';
+      }
+    }
 
     const pathChoose  = document.getElementById('pathChoose');
     const pathChosen  = document.getElementById('pathChosen');
