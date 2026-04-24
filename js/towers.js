@@ -197,6 +197,20 @@ Object.assign(TOWER_DEFS, {
     ],
     legendary: { name: 'Взрыв яда', cost: 500, desc: 'Змеи взрываются ядом (4%/сек, 3 сек, радиус 1.5 кл.) при смерти врага' },
   },
+  falconer: {
+    name: 'Соколятник', cost: 175, mapOnly: 'gorge',
+    color: '#8B5E3C', accentColor: '#5C3A1E',
+    damage: 25, range: 180, fireRate: 50,
+    bulletColor: '#c8843a', bulletSize: 5, bulletSpeed: 9,
+    description: 'Атакует только воздушных врагов · Пускает сокола к цели',
+    isFalconer: true, antiairOnly: true, unlockWave: 4,
+    linearUpgrades: [
+      { name: 'Острые когти',  desc: 'Урон +60%',            cost: 210, damageMult: 1.6 },
+      { name: 'Дальний полёт', desc: 'Радиус +50%',           cost: 250, rangeMult: 1.5 },
+      { name: 'Стремительный', desc: 'Скорострельность +40%', cost: 300, fireRateMult: 1/1.4 },
+    ],
+    legendary: { name: 'Тройной охват', cost: 400, desc: 'Сокол атакует сразу 3 воздушных врага одновременно' },
+  },
   sunmirror: {
     name: 'Зеркало', cost: 300, mapOnly: 'gorge',
     color: '#f1c40f', accentColor: '#d4ac0d',
@@ -935,6 +949,56 @@ class Bullet {
   }
 }
 
+// ─── Falcon bullet (bird-shaped projectile for Соколятник) ───────────────────
+class FalconBullet {
+  constructor(x, y, target, def) {
+    this.x = x; this.y = y;
+    this.target = target;
+    this.damage = def.damage;
+    this.speed  = def.bulletSpeed || 9;
+    this.dead   = false;
+    this.angle  = Math.atan2(target.y - y, target.x - x);
+    this.wingPhase = 0;
+  }
+
+  update(enemies) {
+    if (!this.target || this.target.dead || this.target.reached) { this.dead = true; return []; }
+    const dx = this.target.x - this.x, dy = this.target.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    this.angle = Math.atan2(dy, dx);
+    this.wingPhase++;
+    if (dist < this.speed + 4) {
+      this.target.takeDamage(this.damage, false);
+      this.dead = true;
+      return [this.target];
+    }
+    this.x += (dx / dist) * this.speed;
+    this.y += (dy / dist) * this.speed;
+    return [];
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    const wing = Math.sin(this.wingPhase * 0.45) * 3.5;
+    // тело
+    ctx.fillStyle = '#8B5E3C';
+    ctx.beginPath(); ctx.ellipse(0, 0, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
+    // крылья
+    ctx.fillStyle = '#5C3A1E';
+    ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(-7, -wing - 1); ctx.lineTo(-1, 0); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(-7,  wing + 1); ctx.lineTo(-1, 0); ctx.fill();
+    // голова
+    ctx.fillStyle = '#c8843a';
+    ctx.beginPath(); ctx.arc(5, 0, 2, 0, Math.PI * 2); ctx.fill();
+    // хвост
+    ctx.fillStyle = '#7a4a20';
+    ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(-9, -2); ctx.lineTo(-9, 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
 // ─── Tower class ─────────────────────────────────────────────────────────────
 class Tower {
   constructor(type, gridX, gridY, cellSize, game = null) {
@@ -994,7 +1058,8 @@ class Tower {
     // Mine / anti-air / linear-upgrade flags
     this.isMine      = def.isMine      || false;
     this.mineIncome  = def.mineIncome  || 0;
-    this.antiairOnly = (type === 'antiair');
+    this.antiairOnly = (type === 'antiair') || !!def.antiairOnly;
+    this.isFalconer  = def.isFalconer  || false;
     this.isLinear    = !!(def.linearUpgrades);
     // Map 2 specific fields
     this.mapOnly          = def.mapOnly          || null;
@@ -1307,6 +1372,19 @@ class Tower {
       const arcDef = { ...def, fireShot, burnPct: fireShot ? 0.03 : 0, burnDuration: 4, bulletSpeed: TOWER_DEFS.catapult.bulletSpeed };
       return new ArcBullet(this.x, this.y, best, arcDef, this.splashRadius);
     }
+    // Соколятник: сокол летит к воздушной цели; легендарное — 3 цели одновременно
+    if (this.isFalconer) {
+      if (this.legendary && this.game) {
+        const airTargets = enemies
+          .filter(e => !e.dead && !e.reached && e.air && !e.invis)
+          .sort((a, b) => b.pathIndex - a.pathIndex)
+          .slice(0, 3);
+        if (airTargets.length === 0) return null;
+        airTargets.slice(1).forEach(t => this.game.bullets.push(new FalconBullet(this.x, this.y, t, def)));
+        return new FalconBullet(this.x, this.y, airTargets[0], def);
+      }
+      return new FalconBullet(this.x, this.y, best, def);
+    }
     return new Bullet(this.x, this.y, best, def, this.type, this.splashRadius);
   }
 
@@ -1463,6 +1541,7 @@ function drawTower(ctx, type, cx, cy, level, angle) {
     case 'tombguard':    _drawTombGuard(ctx, level, angle);    break;
     case 'obelisk':      _drawObelisk(ctx, level);             break;
     case 'snakecharmer': _drawSnakeCharmer(ctx, level);        break;
+    case 'falconer':     _drawFalconer(ctx, level, angle);     break;
     case 'sunmirror':    _drawSunMirror(ctx, level, angle);    break;
   }
   ctx.shadowBlur = 0;
@@ -1968,6 +2047,51 @@ function _drawSunMirror(ctx, level, angle) {
       ctx.moveTo(s+5+Math.cos(a)*7, Math.sin(a)*7);
       ctx.lineTo(s+5+Math.cos(a)*11, Math.sin(a)*11); ctx.stroke();
     }
+  }
+  ctx.restore();
+}
+
+function _drawFalconer(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const s=level>=2?10:8;
+  // Основание — коричневое дерево
+  R(-s,-s,s*2,s*2,level>=3?'#2a1a00':'#5C3A1E');
+  R(-s,-s,s,s,'#7a4a20'); R(0,0,s,s,'#7a4a20');
+  R(0,-s,s,s,'#5C3A1E'); R(-s,0,s,s,'#5C3A1E');
+  if(level>=1){ctx.strokeStyle='#c8843a';ctx.lineWidth=2;ctx.strokeRect(-s-1,-s-1,s*2+2,s*2+2);}
+  // Жердь (насест)
+  ctx.strokeStyle='#7a4a20'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(-6,1); ctx.lineTo(6,1); ctx.stroke();
+  // Силуэт сокола на насесте
+  const now=Date.now()*0.003;
+  const wing=Math.sin(now*1.8)*2;
+  // Тело птицы
+  ctx.fillStyle=level>=3?'#e8a040':'#8B5E3C';
+  ctx.beginPath(); ctx.ellipse(0,-7,4,2.5,0,0,Math.PI*2); ctx.fill();
+  // Голова
+  C(3.5,-8,2.5,level>=3?'#f0b050':'#a06030');
+  // Клюв
+  ctx.fillStyle='#f0c040';
+  ctx.beginPath(); ctx.moveTo(5.5,-8); ctx.lineTo(8,-8.5); ctx.lineTo(5.5,-7); ctx.fill();
+  // Крылья (анимированные)
+  ctx.fillStyle='#5C3A1E';
+  ctx.beginPath(); ctx.moveTo(-1,-7); ctx.lineTo(-7,-4+wing); ctx.lineTo(-1,-5); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-1,-7); ctx.lineTo(-7,-10-wing); ctx.lineTo(-1,-9); ctx.fill();
+  // Хвост
+  ctx.fillStyle='#7a4a20';
+  ctx.beginPath(); ctx.moveTo(-4,-7); ctx.lineTo(-8,-5.5); ctx.lineTo(-8,-8.5); ctx.fill();
+  // Стрела направления выстрела
+  ctx.save(); ctx.rotate(angle);
+  ctx.strokeStyle='rgba(200,130,50,0.6)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(s+2,0); ctx.lineTo(s+8,0); ctx.stroke();
+  ctx.fillStyle='rgba(200,130,50,0.6)';
+  ctx.beginPath(); ctx.moveTo(s+6,-2); ctx.lineTo(s+10,0); ctx.lineTo(s+6,2); ctx.fill();
+  if(level>=2){
+    ctx.shadowColor='#f0b050'; ctx.shadowBlur=8;
+    ctx.strokeStyle='rgba(240,176,80,0.5)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(s+2,0); ctx.lineTo(s+12,0); ctx.stroke();
+    ctx.shadowBlur=0;
   }
   ctx.restore();
 }

@@ -452,7 +452,7 @@ class Game {
     }
 
     // Unlock notifications for new towers
-    const UNLOCK_MSGS = { lightning: '⚡ Башня Молнии разблокирована!', time: '⏳ Башня Времени разблокирована!' };
+    const UNLOCK_MSGS = { lightning: '⚡ Башня Молнии разблокирована!', time: '⏳ Башня Времени разблокирована!', falconer: '🦅 Соколятник разблокирован!' };
     for (const [type, msg] of Object.entries(UNLOCK_MSGS)) {
       const def = TOWER_DEFS[type];
       if (def.unlockWave === this.wave && !this._unlockNotified.has(type)) {
