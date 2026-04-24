@@ -143,13 +143,13 @@ Object.assign(TOWER_DEFS, {
     color: '#c8a060', accentColor: '#a07840',
     damage: 0, range: 126, fireRate: 9999,
     bulletColor: '#c8a060', bulletSize: 0, bulletSpeed: 0,
-    description: 'Аура: замедл. 35% + 10 урона/сек всем в радиусе',
+    description: 'Аура: замедл. 35% + 2% maxHP/сек всем в радиусе',
     isSandstorm: true, isAura: true,
-    sandstormSlowFactor: 0.65, sandstormDps: 10,
+    sandstormSlowFactor: 0.65, sandstormDpsPct: 0.02,
     linearUpgrades: [
       { name: 'Сильный ветер',   desc: 'Замедление 55%',     cost: 200, sandstormSlowBonus: 0.2 },
       { name: 'Широкий вихрь',   desc: 'Радиус +50%',        cost: 240, rangeMult: 1.5 },
-      { name: 'Острый песок',    desc: 'Урон 20/сек',        cost: 280, sandstormDpsBonus: 10 },
+      { name: 'Пескоструй',      desc: 'Урон 3% maxHP/сек',  cost: 280, sandstormDpsPctBonus: 0.01 },
     ],
     legendary: { name: 'Ока Пустыни', cost: 500, desc: 'Соседние башни (≤2 кл.) получают +30% урон' },
   },
@@ -447,7 +447,7 @@ function applyEffect(tower, effect) {
   if (effect.maxScorpionStacks!== undefined) tower.maxScorpionStacks = (tower.maxScorpionStacks||5) + effect.maxScorpionStacks;
   if (effect.scorpionPctBonus !== undefined) tower.scorpionPctBonus  = (tower.scorpionPctBonus||0) + effect.scorpionPctBonus;
   if (effect.sandstormSlowBonus!==undefined) tower.sandstormSlowFactor= Math.max(0.1, (tower.sandstormSlowFactor||0.65) - effect.sandstormSlowBonus);
-  if (effect.sandstormDpsBonus!== undefined) tower.sandstormDps = (tower.sandstormDps||10) + effect.sandstormDpsBonus;
+  if (effect.sandstormDpsPctBonus!==undefined) tower.sandstormDpsPct = (tower.sandstormDpsPct||0.02) + effect.sandstormDpsPctBonus;
   if (effect.guardBlockBonus  !== undefined) tower.guardBlockDuration = (tower.guardBlockDuration||3) + effect.guardBlockBonus;
   if (effect.curseDurationBonus!==undefined) tower.curseDuration = (tower.curseDuration||8) + effect.curseDurationBonus;
   if (effect.mirrorNoPenalty  !== undefined) tower.mirrorNoPenalty = true;
@@ -1070,7 +1070,7 @@ class Tower {
     this.scorpionPctBonus = 0;
     this.isSandstorm      = def.isSandstorm      || false;
     this.sandstormSlowFactor = def.sandstormSlowFactor || 0.65;
-    this.sandstormDps     = def.sandstormDps     || 10;
+    this.sandstormDpsPct  = def.sandstormDpsPct  || 0.02;
     this.isGuard          = def.isGuard          || false;
     this.guardBlockDuration= def.guardBlockDuration || 3;
     this._guardBlocking   = [];
@@ -1393,15 +1393,14 @@ class Tower {
     const effRange = Math.floor(this.range * this.comboMult.range);
 
     if (this.isSandstorm) {
-      // Аура пустынного вихря: замедление + урон/сек
+      // Аура пустынного вихря: замедление + % от maxHP/сек
       const mapDmg = this.game?.mapDamageMult || 1;
-      const dps = this.sandstormDps * mapDmg;
       enemies.forEach(e => {
         if (e.dead || e.reached) return;
         const dx = e.x - this.x, dy = e.y - this.y;
         if (Math.sqrt(dx*dx + dy*dy) <= effRange) {
           e.applySlow(this.sandstormSlowFactor, 0.15);
-          e.takeDamage(dps * dt);
+          e.takeDamage(e.maxHP * this.sandstormDpsPct * mapDmg * dt);
         }
       });
       return;
