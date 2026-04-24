@@ -85,6 +85,14 @@ class UI {
     const pauseBtn = document.getElementById('pauseBtn');
     if (pauseBtn) pauseBtn.addEventListener('click', () => this.game.togglePause());
 
+    // Speed buttons
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.game.gameSpeed = parseInt(btn.dataset.speed, 10);
+        this.updateSpeedBtns();
+      });
+    });
+
     // Achievement button
     document.getElementById('achBtn').addEventListener('click', () => this.game.achievements.showScreen());
     document.getElementById('achCloseBtn').addEventListener('click', () => {
@@ -187,6 +195,12 @@ class UI {
     btn.classList.toggle('active', this.game.paused);
   }
 
+  updateSpeedBtns() {
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.speed, 10) === this.game.gameSpeed);
+    });
+  }
+
   deselect() {
     this.selectedTowerType = null;
     Object.values(this.towerButtons).forEach(b => b.classList.remove('active'));
@@ -214,6 +228,7 @@ class UI {
     if (mapNameEl && this.game.currentMap) mapNameEl.textContent = this.game.currentMap.name;
     this.startBtn.disabled   = this.game.waveInProgress || !this.game.storyReady || this.game.victory;
     this.updatePauseBtn();
+    this.updateSpeedBtns();
     this.startBtn.textContent = this.game.waveInProgress
       ? `Волна ${this.game.wave}...`
       : `Начать волну ${this.game.wave + 1}`;

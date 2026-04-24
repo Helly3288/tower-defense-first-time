@@ -196,6 +196,7 @@ class Game {
     this.snakes              = [];
     this._unlockNotified     = new Set();
     this.paused              = false;
+    this.gameSpeed           = 1;
     this._timeFreezeGlobalCD = 0;
     this.expertMode          = false;
 
@@ -366,6 +367,7 @@ class Game {
     this.gameOverTimer       = 0;
     this.autoWaveCountdown   = 0;
     this.paused              = false;
+    this.gameSpeed           = 1;
     this.healUsedCount       = 0;
     this.furyActive          = false;
     this.freezeActive        = false;
@@ -2003,7 +2005,7 @@ class Game {
     const tick = (now) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      this.update(dt);
+      for (let i = 0; i < this.gameSpeed; i++) this.update(dt);
       this.draw();
       requestAnimationFrame(tick);
     };

@@ -144,6 +144,19 @@
     #pauseBtn:disabled { opacity: 0.35; cursor: not-allowed; }
     #pauseBtn.active { background: #27ae60; border-color: #2ecc71; color: #fff; }
 
+    .speed-btn {
+      padding: 4px 7px;
+      background: #1a2a3a;
+      color: #aaa;
+      border: 1px solid #2a4a6a;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background 0.1s, color 0.1s;
+    }
+    .speed-btn:hover { background: #2a4a6a; color: #fff; }
+    .speed-btn.active { background: #e67e22; border-color: #f39c12; color: #fff; }
+
     #startWave {
       width: 100%;
       padding: 10px;
@@ -929,6 +942,11 @@
     </div>
     <div class="hud-item">
       <button id="pauseBtn" disabled>⏸ Пауза</button>
+    </div>
+    <div class="hud-item" style="display:flex;gap:3px;align-items:center">
+      <button class="speed-btn active" data-speed="1">1x</button>
+      <button class="speed-btn" data-speed="2">2x</button>
+      <button class="speed-btn" data-speed="3">3x</button>
     </div>
   </div>
 
