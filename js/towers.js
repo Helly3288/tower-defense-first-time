@@ -156,7 +156,7 @@ Object.assign(TOWER_DEFS, {
   tombguard: {
     name: 'Стражник', cost: 200, mapOnly: 'gorge',
     color: '#d4a520', accentColor: '#a07800',
-    damage: 35, range: 108, fireRate: 480,
+    damage: 35, range: 108, fireRate: 300,
     bulletColor: '#d4a520', bulletSize: 4, bulletSpeed: 10,
     description: 'Блокирует ВСЕХ врагов в радиусе 3 кл. на 3 сек · Перезарядка 5 сек',
     isGuard: true, guardBlockDuration: 3,

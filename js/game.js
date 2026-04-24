@@ -519,7 +519,7 @@ class Game {
       this.raidActive   = false;
 
       const bonus = this.currentMap?.id === 'gorge'
-        ? 25 + this.wave * 8
+        ? 40 + this.wave * 10
         : 5 + this.wave * 3;
       this.gold += bonus;
       this.score += this.wave * 50;
