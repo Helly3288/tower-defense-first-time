@@ -102,11 +102,6 @@ Object.assign(TOWER_DEFS, {
     bulletColor: '#ff6b35', bulletSize: 5, bulletSpeed: 8,
     description: 'Поджигает: 3% maxHP/сек на 4 сек',
     burnPct: 0.03, burnDuration: 4,
-    linearUpgrades: [
-      { name: 'Жаркий огонь',    desc: 'Урон +50%',          cost: 120, damageMult: 1.5 },
-      { name: 'Длинное пламя',   desc: 'Ожог 7 сек',         cost: 160, burnDuration: 7 },
-      { name: 'Широкий факел',   desc: 'Радиус +40%',        cost: 200, rangeMult: 1.4 },
-    ],
     legendary: { name: 'Живой огонь', cost: 350, desc: 'Огонь перекидывается на врагов в радиусе 1 клетки' },
   },
   catapult: {
@@ -117,11 +112,6 @@ Object.assign(TOWER_DEFS, {
     splashRadius: 54,
     description: 'Большой урон по площади, снаряд по дуге',
     isArc: true,
-    linearUpgrades: [
-      { name: 'Тяжёлый камень', desc: 'Урон +60%',           cost: 160, damageMult: 1.6 },
-      { name: 'Широкое падение', desc: 'Площадь +50%',       cost: 200, splashMult: 1.5 },
-      { name: 'Быстрая зарядка', desc: 'Скорость +40%',      cost: 240, fireRateMult: 1/1.4 },
-    ],
     legendary: { name: 'Огненный камень', cost: 400, desc: 'Каждый 4-й выстрел поджигает всю область (3% maxHP/сек)' },
   },
   scorpion: {
@@ -131,11 +121,6 @@ Object.assign(TOWER_DEFS, {
     bulletColor: '#8dde26', bulletSize: 4, bulletSpeed: 9,
     description: 'Стаки яда: до 5 стаков × 2% maxHP/сек',
     isScorpion: true, maxScorpionStacks: 5,
-    linearUpgrades: [
-      { name: 'Смертельный яд',  desc: 'Макс. стаков 8',     cost: 180, maxScorpionStacks: 3 },
-      { name: 'Едкий токсин',    desc: 'Урон стака 3%',      cost: 220, scorpionPctBonus: 0.01 },
-      { name: 'Длинное жало',    desc: 'Радиус +40%',        cost: 260, rangeMult: 1.4 },
-    ],
     legendary: { name: 'Смертельное жало', cost: 450, desc: 'При максимальных стаках враг взрывается ядом (радиус 1 клетки)' },
   },
   sandstorm: {
@@ -146,11 +131,6 @@ Object.assign(TOWER_DEFS, {
     description: 'Аура: замедл. 35% + 2% maxHP/сек всем в радиусе',
     isSandstorm: true, isAura: true,
     sandstormSlowFactor: 0.65, sandstormDpsPct: 0.02,
-    linearUpgrades: [
-      { name: 'Сильный ветер',   desc: 'Замедление 55%',     cost: 200, sandstormSlowBonus: 0.2 },
-      { name: 'Широкий вихрь',   desc: 'Радиус +50%',        cost: 240, rangeMult: 1.5 },
-      { name: 'Пескоструй',      desc: 'Урон 3% maxHP/сек',  cost: 280, sandstormDpsPctBonus: 0.01 },
-    ],
     legendary: { name: 'Ока Пустыни', cost: 500, desc: 'Соседние башни (≤2 кл.) получают +30% урон' },
   },
   tombguard: {
@@ -160,11 +140,6 @@ Object.assign(TOWER_DEFS, {
     bulletColor: '#d4a520', bulletSize: 4, bulletSpeed: 10,
     description: 'Блокирует ВСЕХ врагов в радиусе 3 кл. на 3 сек · Перезарядка 5 сек',
     isGuard: true, guardBlockDuration: 3,
-    linearUpgrades: [
-      { name: 'Тяжёлая булава',  desc: 'Урон +70%',               cost: 220, damageMult: 1.7 },
-      { name: 'Долгий блок',     desc: 'Длительность блока 5 сек', cost: 260, guardBlockBonus: 2 },
-      { name: 'Широкий захват',  desc: 'Радиус +50%',              cost: 300, rangeMult: 1.5 },
-    ],
     legendary: { name: 'Печать Гробницы', cost: 400, desc: 'Заблокированные враги получают ×3 урона от всех башен в радиусе 4 клеток' },
   },
   obelisk: {
@@ -174,11 +149,6 @@ Object.assign(TOWER_DEFS, {
     bulletColor: '#9b59b6', bulletSize: 5, bulletSpeed: 7,
     description: 'Проклятие: +60% входящего урона на 8 сек',
     isCurse: true, curseFactor: 1.6, curseDuration: 8,
-    linearUpgrades: [
-      { name: 'Тёмные руны',     desc: 'Урон +100%',         cost: 240, damageMult: 2.0 },
-      { name: 'Долгое проклятие',desc: 'Длительность 12 сек', cost: 280, curseDurationBonus: 4 },
-      { name: 'Широкий охват',   desc: 'Радиус +50%',        cost: 320, rangeMult: 1.5 },
-    ],
     legendary: { name: 'Великое Проклятие', cost: 550, desc: 'Проклятие распространяется на всех врагов в 2 клетках от цели' },
   },
   snakecharmer: {
@@ -190,11 +160,6 @@ Object.assign(TOWER_DEFS, {
     isSnakeCharmer: true,
     snakeDamage: 20, snakePoisonPct: 0.02, snakePoisonDuration: 3,
     snakeDistance: 8, snakeInterval: 5, maxSnakes: 3,
-    linearUpgrades: [
-      { name: 'Длинная змея',    desc: 'Змея проходит 15 клеток', cost: 280, snakeDistanceBonus: 7 },
-      { name: 'Смертельный яд',  desc: 'Яд 4%/сек',          cost: 320, snakePoisonBonus: 0.02 },
-      { name: 'Выводок',         desc: '+1 змея одновременно', cost: 360, maxSnakesBonus: 1 },
-    ],
     legendary: { name: 'Взрыв яда', cost: 500, desc: 'Змеи взрываются ядом (4%/сек, 3 сек, радиус 1.5 кл.) при смерти врага' },
   },
   falconer: {
@@ -204,11 +169,6 @@ Object.assign(TOWER_DEFS, {
     bulletColor: '#c8843a', bulletSize: 5, bulletSpeed: 9,
     description: 'Атакует только воздушных врагов · Пускает сокола к цели',
     isFalconer: true, antiairOnly: true, unlockWave: 4,
-    linearUpgrades: [
-      { name: 'Острые когти',  desc: 'Урон +60%',            cost: 210, damageMult: 1.6 },
-      { name: 'Дальний полёт', desc: 'Радиус +50%',           cost: 250, rangeMult: 1.5 },
-      { name: 'Стремительный', desc: 'Скорострельность +40%', cost: 300, fireRateMult: 1/1.4 },
-    ],
     legendary: { name: 'Тройной охват', cost: 400, desc: 'Сокол атакует сразу 3 воздушных врага одновременно' },
   },
   sunmirror: {
@@ -219,11 +179,6 @@ Object.assign(TOWER_DEFS, {
     description: 'Луч — бьёт всех врагов на одном отрезке пути',
     isSunMirror: true, unlockWave: 8,
     mirrorDmgDecay: 0.85,
-    linearUpgrades: [
-      { name: 'Концентрированный луч', desc: 'Урон +50%',    cost: 320, damageMult: 1.5 },
-      { name: 'Прямой удар',    desc: 'Без снижения по цепи', cost: 380, mirrorNoPenalty: true },
-      { name: 'Длинный луч',    desc: 'Радиус +60%',         cost: 440, rangeMult: 1.6 },
-    ],
     legendary: { name: 'Солнечная пушка', cost: 600, desc: 'Луч поджигает всех врагов в линии на 5 сек (3% maxHP/сек)' },
   },
 });
@@ -323,6 +278,224 @@ const TOWER_PATHS = {
       upgrades: [
         { name: 'Нейротоксин',    desc: 'Яд +2% maxHP/сек',       cost: 190, poisonPct: 0.02 },
         { name: 'Биооружие',      desc: 'Яд 8 сек · Урон +8',     cost: 320, poisonDuration: 8, damage: 8 },
+      ],
+    },
+  },
+
+  // ── Map 2: Desert towers ────────────────────────────────────────────────────
+  torch: {
+    A: {
+      name: 'Адский огонь', letter: 'А',
+      desc: 'Урон +50% · Ожог 5% HP/сек',
+      color: '#e74c3c', accentColor: '#c0392b', bulletColor: '#ff6b35',
+      cost: 140,
+      apply: { damageMult: 1.5, burnPctBonus: 0.02 },
+      upgrades: [
+        { name: 'Жаркое пламя',  desc: 'Ожог 8 сек',                    cost: 180, burnDuration: 8 },
+        { name: 'Инферно',       desc: 'Урон ×1.5 · Ожог 7% HP/сек',   cost: 280, damageMult: 1.5, burnPctBonus: 0.02 },
+      ],
+    },
+    B: {
+      name: 'Смоляной', letter: 'Б',
+      desc: 'Радиус +50% · Ожог 7 сек',
+      color: '#7d3c98', accentColor: '#6c3483', bulletColor: '#a569bd',
+      cost: 130,
+      apply: { rangeMult: 1.5, burnDuration: 7 },
+      upgrades: [
+        { name: 'Вязкая смола',  desc: 'Урон +70%',                     cost: 180, damageMult: 1.7 },
+        { name: 'Смоляное море', desc: 'Радиус +40% · Ожог 10 сек',     cost: 260, rangeMult: 1.4, burnDuration: 10 },
+      ],
+    },
+  },
+  catapult: {
+    A: {
+      name: 'Требушет', letter: 'А',
+      desc: 'Урон +60% · Радиус +40%',
+      color: '#922b21', accentColor: '#7b241c', bulletColor: '#e74c3c',
+      cost: 180,
+      apply: { damageMult: 1.6, rangeMult: 1.4 },
+      upgrades: [
+        { name: 'Тяжёлый снаряд', desc: 'Урон ×1.4',                   cost: 240, damageMult: 1.4 },
+        { name: 'Осадная машина', desc: 'Урон ×1.5 · Радиус +30%',     cost: 360, damageMult: 1.5, rangeMult: 1.3 },
+      ],
+    },
+    B: {
+      name: 'Шрапнель', letter: 'Б',
+      desc: 'Площадь +60% · Скорость +40%',
+      color: '#7f8c8d', accentColor: '#5d6d7e', bulletColor: '#bdc3c7',
+      cost: 200,
+      apply: { splashMult: 1.6, fireRateMult: 1/1.4 },
+      upgrades: [
+        { name: 'Широкий взрыв',      desc: 'Площадь +50%',             cost: 260, splashMult: 1.5 },
+        { name: 'Шрапнельный шторм',  desc: 'Урон +50% · Площадь +50%', cost: 380, damageMult: 1.5, splashMult: 1.5 },
+      ],
+    },
+  },
+  scorpion: {
+    A: {
+      name: 'Королевский', letter: 'А',
+      desc: 'Макс. стаков +3 · Урон стака 3%',
+      color: '#d4ac0d', accentColor: '#a07800', bulletColor: '#f1c40f',
+      cost: 190,
+      apply: { maxScorpionStacks: 3, scorpionPctBonus: 0.01 },
+      upgrades: [
+        { name: 'Императорский яд',  desc: 'Макс. стаков +2',                cost: 250, maxScorpionStacks: 2 },
+        { name: 'Королевское жало',  desc: 'Урон стака 4% · Радиус +40%',    cost: 360, scorpionPctBonus: 0.01, rangeMult: 1.4 },
+      ],
+    },
+    B: {
+      name: 'Парализующий', letter: 'Б',
+      desc: 'Урон +50% · Радиус +40%',
+      color: '#8e44ad', accentColor: '#6c3483', bulletColor: '#c39bd3',
+      cost: 170,
+      apply: { damageMult: 1.5, rangeMult: 1.4 },
+      upgrades: [
+        { name: 'Нервный яд',        desc: 'Урон +50%',                       cost: 220, damageMult: 1.5 },
+        { name: 'Тотальный паралич', desc: 'Радиус +40% · Макс. стаков +2',   cost: 320, rangeMult: 1.4, maxScorpionStacks: 2 },
+      ],
+    },
+  },
+  sandstorm: {
+    A: {
+      name: 'Буря', letter: 'А',
+      desc: 'Урон 4% HP/сек · Радиус +40%',
+      color: '#e67e22', accentColor: '#d35400', bulletColor: '#f39c12',
+      cost: 210,
+      apply: { sandstormDpsPctBonus: 0.02, rangeMult: 1.4 },
+      upgrades: [
+        { name: 'Ураган',             desc: 'Урон 5% HP/сек',                 cost: 260, sandstormDpsPctBonus: 0.01 },
+        { name: 'Смертоносный шторм', desc: 'Урон 6% HP/сек · Радиус +50%',   cost: 380, sandstormDpsPctBonus: 0.01, rangeMult: 1.5 },
+      ],
+    },
+    B: {
+      name: 'Пескоструй', letter: 'Б',
+      desc: 'Замедление 55% · Радиус +50%',
+      color: '#c8a060', accentColor: '#a07840', bulletColor: '#d4aa6a',
+      cost: 200,
+      apply: { sandstormSlowBonus: 0.2, rangeMult: 1.5 },
+      upgrades: [
+        { name: 'Абразивный', desc: 'Замедление 65%',                         cost: 240, sandstormSlowBonus: 0.1 },
+        { name: 'Стеклорез',  desc: 'Замедление 75% · Радиус +40%',           cost: 340, sandstormSlowBonus: 0.1, rangeMult: 1.4 },
+      ],
+    },
+  },
+  tombguard: {
+    A: {
+      name: 'Фараон', letter: 'А',
+      desc: 'Урон +70% · Блок 5 сек',
+      color: '#d4a520', accentColor: '#a07800', bulletColor: '#f0c040',
+      cost: 240,
+      apply: { damageMult: 1.7, guardBlockBonus: 2 },
+      upgrades: [
+        { name: 'Жезл Фараона', desc: 'Урон ×1.4',                           cost: 280, damageMult: 1.4 },
+        { name: 'Воля Богов',   desc: 'Блок +3 сек · Урон ×1.5',             cost: 400, guardBlockBonus: 3, damageMult: 1.5 },
+      ],
+    },
+    B: {
+      name: 'Двойник', letter: 'Б',
+      desc: 'Радиус +50% · Урон +50%',
+      color: '#1abc9c', accentColor: '#148f77', bulletColor: '#76d7c4',
+      cost: 260,
+      apply: { rangeMult: 1.5, damageMult: 1.5 },
+      upgrades: [
+        { name: 'Страж Пустыни',  desc: 'Радиус +40%',                       cost: 300, rangeMult: 1.4 },
+        { name: 'Двойная стража', desc: 'Блок +2 сек · Радиус +40%',         cost: 400, guardBlockBonus: 2, rangeMult: 1.4 },
+      ],
+    },
+  },
+  obelisk: {
+    A: {
+      name: 'Древнее проклятие', letter: 'А',
+      desc: 'Урон +100% · Проклятие 12 сек',
+      color: '#9b59b6', accentColor: '#7d3c98', bulletColor: '#c39bd3',
+      cost: 270,
+      apply: { damageMult: 2.0, curseDurationBonus: 4 },
+      upgrades: [
+        { name: 'Тёмные руны',      desc: 'Радиус +50%',                     cost: 300, rangeMult: 1.5 },
+        { name: 'Вечное проклятие', desc: 'Урон ×2 · Проклятие +6 сек',      cost: 440, damageMult: 2.0, curseDurationBonus: 6 },
+      ],
+    },
+    B: {
+      name: 'Цепное проклятие', letter: 'Б',
+      desc: 'Радиус +50% · Проклятие 10 сек',
+      color: '#1a237e', accentColor: '#0d1652', bulletColor: '#5c6bc0',
+      cost: 250,
+      apply: { rangeMult: 1.5, curseDurationBonus: 2 },
+      upgrades: [
+        { name: 'Чёрный обелиск', desc: 'Радиус +50%',                       cost: 320, rangeMult: 1.5 },
+        { name: 'Древняя мощь',   desc: 'Урон ×2.5 · Радиус +40%',           cost: 480, damageMult: 2.5, rangeMult: 1.4 },
+      ],
+    },
+  },
+  snakecharmer: {
+    A: {
+      name: 'Кобра', letter: 'А',
+      desc: 'Яд 4%/сек · Змея 15 клеток',
+      color: '#27ae60', accentColor: '#1e8449', bulletColor: '#58d68d',
+      cost: 280,
+      apply: { snakePoisonBonus: 0.02, snakeDistanceBonus: 7 },
+      upgrades: [
+        { name: 'Кобра-царь',      desc: 'Яд +2%/сек',                       cost: 320, snakePoisonBonus: 0.02 },
+        { name: 'Смертельный укус', desc: 'Змея +5 кл. · Яд 8%/сек',         cost: 460, snakeDistanceBonus: 5, snakePoisonBonus: 0.02 },
+      ],
+    },
+    B: {
+      name: 'Гнездо', letter: 'Б',
+      desc: '+1 змея · Яд 4%/сек',
+      color: '#e67e22', accentColor: '#d35400', bulletColor: '#f39c12',
+      cost: 300,
+      apply: { maxSnakesBonus: 1, snakePoisonBonus: 0.02 },
+      upgrades: [
+        { name: 'Клубок',         desc: '+1 змея одновременно',               cost: 360, maxSnakesBonus: 1 },
+        { name: 'Змеиное гнездо', desc: '+1 змея · Яд 6%/сек',               cost: 500, maxSnakesBonus: 1, snakePoisonBonus: 0.02 },
+      ],
+    },
+  },
+  falconer: {
+    A: {
+      name: 'Орёл', letter: 'А',
+      desc: 'Урон +60% · Радиус +50%',
+      color: '#d4a520', accentColor: '#a07800', bulletColor: '#f0c040',
+      cost: 220,
+      apply: { damageMult: 1.6, rangeMult: 1.5 },
+      upgrades: [
+        { name: 'Боевой орёл',    desc: 'Урон +60%',                         cost: 260, damageMult: 1.6 },
+        { name: 'Имперский орёл', desc: 'Радиус +50% · Урон ×1.5',           cost: 380, rangeMult: 1.5, damageMult: 1.5 },
+      ],
+    },
+    B: {
+      name: 'Стая', letter: 'Б',
+      desc: 'Скорострельность +40% · Радиус +50%',
+      color: '#3498db', accentColor: '#2471a3', bulletColor: '#85c1e9',
+      cost: 250,
+      apply: { fireRateMult: 1/1.4, rangeMult: 1.5 },
+      upgrades: [
+        { name: 'Быстрые крылья', desc: 'Скорострельность +40%',              cost: 280, fireRateMult: 1/1.4 },
+        { name: 'Стая соколов',   desc: 'Скорострельность +30% · Урон +60%',  cost: 380, fireRateMult: 1/1.3, damageMult: 1.6 },
+      ],
+    },
+  },
+  sunmirror: {
+    A: {
+      name: 'Солнечная пушка', letter: 'А',
+      desc: 'Урон +50% · Без снижения по цепи',
+      color: '#e74c3c', accentColor: '#c0392b', bulletColor: '#f39c12',
+      cost: 350,
+      apply: { damageMult: 1.5, mirrorNoPenalty: true },
+      upgrades: [
+        { name: 'Прямой удар',       desc: 'Урон ×1.4',                      cost: 380, damageMult: 1.4 },
+        { name: 'Солнечная батарея', desc: 'Урон ×1.5 · Радиус +50%',        cost: 540, damageMult: 1.5, rangeMult: 1.5 },
+      ],
+    },
+    B: {
+      name: 'Рассеянный свет', letter: 'Б',
+      desc: 'Радиус +60% · Урон +50%',
+      color: '#f1c40f', accentColor: '#d4ac0d', bulletColor: '#fffaaa',
+      cost: 320,
+      apply: { rangeMult: 1.6, damageMult: 1.5 },
+      upgrades: [
+        { name: 'Широкий луч',  desc: 'Радиус +50%',                          cost: 380, rangeMult: 1.5 },
+        { name: 'Тысяча солнц', desc: 'Урон ×1.5 · Радиус +50%',             cost: 540, damageMult: 1.5, rangeMult: 1.5 },
       ],
     },
   },
@@ -434,6 +607,7 @@ function applyEffect(tower, effect) {
   if (effect.burn          !== undefined) tower.burn         = effect.burn;
   if (effect.burnDps       !== undefined) tower.burnDps      = effect.burnDps;
   if (effect.burnDuration  !== undefined) tower.burnDuration = effect.burnDuration;
+  if (effect.burnPctBonus  !== undefined) tower.burnPct      = (tower.burnPct || 0) + effect.burnPctBonus;
   if (effect.nuclear       !== undefined) tower.nuclear      = effect.nuclear;
   if (effect.poison        !== undefined) tower.poison       = effect.poison;
   if (effect.poisonDps     !== undefined) tower.poisonDps    = (tower.poisonDps || 0) + effect.poisonDps;
