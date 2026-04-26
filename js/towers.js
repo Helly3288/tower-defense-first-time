@@ -1454,7 +1454,7 @@ class Tower {
     // ── Guard tower (melee block) ────────────────────────────────────────────
     if (this.isGuard) {
       if (this.cooldown > 0) { this.cooldown--; return null; }
-      const effRange = Math.floor(this.range * this.comboMult.range);
+      const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
       const toBlock = [];
       enemies.forEach(e => {
         if (e.dead || e.reached || e.air || e.blocked) return;
@@ -1481,7 +1481,7 @@ class Tower {
     // ── Sun Mirror (beam) ────────────────────────────────────────────────────
     if (this.isSunMirror) {
       if (this.cooldown > 0) { this.cooldown--; return null; }
-      const effRange = Math.floor(this.range * this.comboMult.range);
+      const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
       let primary = null, bestP = -1;
       enemies.forEach(e => {
         if (e.dead || e.reached || e.air || e.invis) return;
@@ -1529,7 +1529,7 @@ class Tower {
       if (!this.antiairOnly && e.air) return;   // наземные башни игнорируют воздушных
       if (e.invis) return;                      // Ксара невидима — башни не атакуют
       const dx = e.x - this.x, dy = e.y - this.y;
-      const effRange = Math.floor(this.range * this.comboMult.range);
+      const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
       const visRange = (e.elite?.type === 'invis') ? Math.min(effRange, 54) : effRange;
       if (Math.sqrt(dx*dx + dy*dy) <= visRange) {
         const ni = Math.min(e.pathIndex + 1, e.path.length - 1);
@@ -1578,7 +1578,7 @@ class Tower {
   updateAura(dt, enemies) {
     if (!this.isAura) return;
     if (this.maxHP !== null && this.hp <= 0) return;
-    const effRange = Math.floor(this.range * this.comboMult.range);
+    const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
 
     if (this.isSandstorm) {
       // Аура пустынного вихря: замедление + % от maxHP/сек
@@ -1630,7 +1630,7 @@ class Tower {
   }
 
   draw(ctx) {
-    const effRange = Math.floor(this.range * this.comboMult.range);
+    const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
 
     // Aura ring for time tower (always visible)
     if (this.isAura) {

@@ -36,7 +36,9 @@ class UI {
       if (this.game.waveInProgress) return;
       const nextWave = this.game.wave + 1;
       if (nextWave > 0 && nextWave % 5 === 0) {
-        const ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+        const isGorge = this.game.currentMap?.id === 'gorge';
+        const pool = isGorge ? EVENTS_MAP2 : EVENTS;
+        const ev = pool[Math.floor(Math.random() * pool.length)];
         this.showEventModal(ev, () => this.game.startWave());
       } else {
         this.game.startWave();

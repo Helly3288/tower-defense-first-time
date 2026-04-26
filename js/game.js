@@ -79,6 +79,123 @@ const EVENTS = [
   },
 ];
 
+// ─── Тематические события карты 2 (Пустыня руин) — каждые 5 волн ──────────
+const EVENTS_MAP2 = [
+  {
+    id: 'spice_merchant',
+    title: '🐪 Странствующий торговец',
+    desc: 'Торговец предлагает редкое зелье силы за 180g',
+    choices: [
+      {
+        label: 'Купить (180g)',
+        fn: g => {
+          if (g.gold < 180) { g.ui.showMessage('Недостаточно золота!'); return; }
+          g.gold -= 180;
+          g.towers.forEach(t => { if (!t.isMine) t.damage = Math.round(t.damage * 1.2); });
+          g.ui.showMessage('⚗ Зелье силы! Все башни +20% урон навсегда', 2500);
+        }
+      },
+      { label: 'Отказать', fn: () => {} }
+    ]
+  },
+  {
+    id: 'sandstorm',
+    title: '🌪 Песчаная буря!',
+    desc: 'Буря накрывает позиции. Все башни −30% радиус на 3 волны. Не избежать.',
+    choices: [
+      {
+        label: 'Переждать',
+        fn: g => {
+          g.sandstormWavesLeft = 3;
+          g.desertEventFlash = { color: 'rgba(210,180,40,0.45)', timer: 2.0 };
+          g.ui.showMessage('🌪 Буря! −30% радиус башен на 3 волны', 2500);
+        }
+      }
+    ]
+  },
+  {
+    id: 'pharaoh_tomb',
+    title: '🏺 Найдена гробница фараона!',
+    desc: 'Внутри — несметные сокровища и древний артефакт',
+    choices: [
+      {
+        label: 'Забрать золото (+150g)',
+        fn: g => { g.gold += 150; g.ui.showMessage('💰 Сокровища фараона: +150g', 2000); }
+      },
+      {
+        label: 'Забрать артефакт (все башни +15% скорострельность навсегда)',
+        fn: g => {
+          g.towers.forEach(t => { if (!t.isMine) t.fireRate = Math.round(t.fireRate * 0.85); });
+          g.ui.showMessage('🏺 Древний артефакт! Все башни +15% скорострельность навсегда', 2500);
+        }
+      }
+    ]
+  },
+  {
+    id: 'desert_curse',
+    title: '💀 Древнее проклятие!',
+    desc: 'Проклятие пустыни пало на армию врагов — они становятся сильнее. Не избежать.',
+    choices: [
+      {
+        label: 'Принять судьбу',
+        fn: g => {
+          g.desertCurseActive = true;
+          g.desertEventFlash = { color: 'rgba(120,0,180,0.4)', timer: 2.0 };
+          g.ui.showMessage('💀 Проклятие! Враги следующей волны +40% HP', 2500);
+        }
+      }
+    ]
+  },
+  {
+    id: 'scorpion_army',
+    title: '🦂 Нашествие скорпионов!',
+    desc: 'Скорпионы атакуют башни!',
+    choices: [
+      {
+        label: 'Отогнать (80g)',
+        fn: g => {
+          if (g.gold < 80) { g.ui.showMessage('Недостаточно золота!'); return; }
+          g.gold -= 80;
+          g.ui.showMessage('🦂 Скорпионы отогнаны!', 2000);
+        }
+      },
+      {
+        label: 'Игнорировать',
+        fn: g => {
+          const towers = g.towers.filter(t => !t.isMine && t.maxHP !== null);
+          const targets = [];
+          const pool = [...towers];
+          for (let i = 0; i < 3 && pool.length; i++) {
+            const idx = Math.floor(Math.random() * pool.length);
+            targets.push(pool.splice(idx, 1)[0]);
+          }
+          targets.forEach(t => { t.hp = Math.max(1, Math.round(t.hp * 0.7)); });
+          if (towers.length === 0) {
+            g.ui.showMessage('🦂 Скорпионы рыскали, но не нашли башен!', 2000);
+          } else {
+            g.ui.showMessage(`🦂 Скорпионы повредили ${targets.length} башни!`, 2500);
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: 'desert_spirit',
+    title: '✨ Явился дух пустыни',
+    desc: 'Древний дух предлагает дар на выбор',
+    choices: [
+      {
+        label: 'Принять золото (+200g)',
+        fn: g => { g.gold += 200; g.ui.showMessage('✨ Дар духа: +200g', 2000); }
+      },
+      {
+        label: 'Принять защиту (+5 жизней)',
+        fn: g => { g.lives += 5; g.ui.showMessage('✨ Дар духа: +5 жизней', 2000); }
+      }
+    ]
+  },
+];
+
 // ─── Налог на содержание башен (g / волна) ─────────────────────────────────
 const MAINTENANCE = {
   basic: 2, sniper: 4, explosion: 3, slow: 2, antiair: 3, mine: 1, lightning: 5, time: 6,
@@ -185,11 +302,14 @@ class Game {
     this.furyActive      = false;
     this.freezeActive    = false;
     this.fortifyActive   = false;
-    this.raidActive      = false;
-    this.plagueWavesLeft = 0;
-    this.merchantReward  = 0;
-    this.freezeSpawnCount = 0;
-    this.healUsedCount   = 0; // heals used this pause (max 3)
+    this.raidActive         = false;
+    this.plagueWavesLeft    = 0;
+    this.merchantReward     = 0;
+    this.freezeSpawnCount   = 0;
+    this.healUsedCount      = 0; // heals used this pause (max 3)
+    this.sandstormWavesLeft = 0;
+    this.desertCurseActive  = false;
+    this.desertEventFlash   = null; // { color, timer } — visual overlay for desert events
 
     this.lightningBalls      = [];
     this.radiationZones      = [];
@@ -376,6 +496,9 @@ class Game {
     this.plagueWavesLeft     = 0;
     this.merchantReward      = 0;
     this.freezeSpawnCount    = 0;
+    this.sandstormWavesLeft  = 0;
+    this.desertCurseActive   = false;
+    this.desertEventFlash    = null;
     this.bossTitleEffect     = null;
     this.towerDamageDebuffTimer = 0;
     this._unlockNotified     = new Set();
@@ -446,6 +569,14 @@ class Game {
       }
     }
 
+    // Decrement sandstorm range debuff
+    if (this.sandstormWavesLeft > 0) {
+      this.sandstormWavesLeft--;
+      if (this.sandstormWavesLeft === 0) {
+        setTimeout(() => this.ui.showMessage('🌪 Буря утихла! Радиус башен восстановлен.', 2000), 800);
+      }
+    }
+
     const newPhase = this.wave >= 22 ? 3 : this.wave >= 15 ? 2 : this.wave >= 8 ? 1 : 0;
     if (newPhase !== this.dayPhase) {
       this.dayPhase = newPhase;
@@ -500,6 +631,11 @@ class Game {
         enemy.maxHP = Math.floor(enemy.maxHP * 1.4);
         enemy._raidReward = true;
       }
+      // Проклятие пустыни: враги +40% HP (только карта 2, одна волна)
+      if (this.desertCurseActive) {
+        enemy.hp = Math.floor(enemy.hp * 1.4);
+        enemy.maxHP = Math.floor(enemy.maxHP * 1.4);
+      }
       // Заморозка: первые 8 врагов начинают замедленными
       if (this.freezeActive && this.freezeSpawnCount < 8) {
         enemy.speed *= 0.5;
@@ -516,9 +652,10 @@ class Game {
       this.waveInProgress = false;
       this.achievements.onWaveComplete(this);
       // Сбрасываем однoволновые бусты
-      this.furyActive   = false;
-      this.freezeActive = false;
-      this.raidActive   = false;
+      this.furyActive        = false;
+      this.freezeActive      = false;
+      this.raidActive        = false;
+      this.desertCurseActive = false;
 
       const bonus = this.currentMap?.id === 'gorge'
         ? 40 + this.wave * 10
@@ -631,6 +768,12 @@ class Game {
     if (this.bossTitleEffect) {
       this.bossTitleEffect.timer -= dt;
       if (this.bossTitleEffect.flashTimer > 0) this.bossTitleEffect.flashTimer -= dt;
+    }
+
+    // Таймер цветового оверлея событий пустыни
+    if (this.desertEventFlash) {
+      this.desertEventFlash.timer -= dt;
+      if (this.desertEventFlash.timer <= 0) this.desertEventFlash = null;
     }
 
     // Боссовые призывы и специальные эффекты
@@ -954,6 +1097,7 @@ class Game {
     }
     this.drawParticles(ctx);
     this._drawGateLabels(ctx); // floating damage numbers on top
+    this._drawDesertEventFlash(ctx);
     this._drawBossTitleEffect(ctx);
 
     if (this.gameOver) this.drawOverlay(ctx);
@@ -1512,6 +1656,17 @@ class Game {
     ctx.fillStyle = eff.color;
     ctx.font = 'bold 30px sans-serif';
     ctx.fillText(eff.text, W / 2, H / 2);
+    ctx.restore();
+  }
+
+  _drawDesertEventFlash(ctx) {
+    const f = this.desertEventFlash;
+    if (!f || f.timer <= 0) return;
+    const alpha = Math.min(1, f.timer / 0.4); // fade out in last 0.4s
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = f.color;
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.restore();
   }
 
