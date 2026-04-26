@@ -31,12 +31,34 @@ const ENEMY_DEFS = {
   malkar: { name:'Малькар Истинный', baseHP:8000, speed:0.45, reward:0, startWave:60, size:36, isFinalBoss:true, armor:0.55, regenPct:2.0 },
   zarok:  { name:'Зарок',           baseHP:1500, speed:0.8,  reward:0, startWave:60, size:20, isFinalBoss:true, armor:0.30 },
   // ── Gorge-only enemies ───────────────────────────────────────────────────────
-  lancer: { name:'Копьеносец', baseHP:68, speed:1.5, reward:11, startWave:3, size:10, mapOnly:'gorge', deathExplosion:{ damage:20, radius:36 } },
+  lancer:           { name:'Копьеносец',          baseHP:68,  speed:1.5, reward:11, startWave:3,  size:10, mapOnly:'gorge', deathExplosion:{ damage:20, radius:36 } },
+  // ── Map 2 desert enemies (15 unique types) ──────────────────────────────────
+  trader:           { name:'Торговец',             baseHP:20,  speed:1.8, reward:20, startWave:1,  size:8,  mapOnly:'gorge', doubleGold:true },
+  camel_rider:      { name:'Верблюжий всадник',    baseHP:35,  speed:1.3, reward:12, startWave:1,  size:11, mapOnly:'gorge', spawnOnDeath:'rider_foot' },
+  rider_foot:       { name:'Пеший всадник',        baseHP:15,  speed:1.1, reward:0,  startWave:1,  size:8,  mapOnly:'gorge', noWaveSpawn:true },
+  mummy:            { name:'Мумия',                baseHP:50,  speed:0.7, reward:10, startWave:2,  size:10, mapOnly:'gorge', regenPct:4.0, fireDmgMult:1.5 },
+  sand_spirit:      { name:'Песчаный дух',         baseHP:25,  speed:1.5, reward:12, startWave:2,  size:8,  mapOnly:'gorge', shortRangeInvis:true },
+  spearman:         { name:'Копьеносец',           baseHP:40,  speed:1.0, reward:10, startWave:3,  size:9,  mapOnly:'gorge', armor:0.20, deathExplosion:{ damage:20, radius:36 } },
+  pharaoh:          { name:'Фараон',               baseHP:70,  speed:0.9, reward:18, startWave:4,  size:11, mapOnly:'gorge', speedAura:{ mult:1.2, radius:72 } },
+  anubis:           { name:'Анубис',               baseHP:80,  speed:1.1, reward:22, startWave:5,  size:11, mapOnly:'gorge', revive:true },
+  sphinx:           { name:'Сфинкс',               baseHP:90,  speed:1.4, reward:25, startWave:6,  size:12, mapOnly:'gorge', armor:0.25, air:true },
+  desert_giant:     { name:'Пустынный великан',    baseHP:350, speed:0.5, reward:30, startWave:7,  size:18, mapOnly:'gorge', armor:0.35 },
+  ra_priest:        { name:'Жрец Ра',              baseHP:65,  speed:1.0, reward:20, startWave:8,  size:10, mapOnly:'gorge', healer:{ pct:0.03, radius:72 } },
+  scarab:           { name:'Скарабей',             baseHP:20,  speed:2.0, reward:8,  startWave:9,  size:6,  mapOnly:'gorge', spawnGroup:5 },
+  sand_golem:       { name:'Песчаный голем',       baseHP:450, speed:0.6, reward:40, startWave:10, size:16, mapOnly:'gorge', armor:0.45, spawnOnDeath:'sand_golem_mini' },
+  sand_golem_mini:  { name:'Малый голем',          baseHP:80,  speed:0.8, reward:0,  startWave:1,  size:9,  mapOnly:'gorge', armor:0.20, noWaveSpawn:true },
+  dark_mage:        { name:'Тёмный маг',           baseHP:100, speed:1.0, reward:35, startWave:11, size:10, mapOnly:'gorge', teleportInterval:10 },
+  tomb_guardian:    { name:'Хранитель гробниц',    baseHP:130, speed:1.1, reward:38, startWave:12, size:11, mapOnly:'gorge', armor:0.30, startInvis:5.0 },
+  desert_dragon:    { name:'Пустынный дракон',     baseHP:500, speed:1.2, reward:55, startWave:13, size:16, mapOnly:'gorge', armor:0.30, regenPct:2.0, air:true },
 };
 
-// HP scaling: +25% every 2 waves
+// HP scaling: +25% every 2 waves (карты 1 и 3)
 function calcHP(baseHP, wave) {
   return Math.round(baseHP * Math.pow(1.25, Math.floor((wave - 1) / 2)));
+}
+// HP scaling: +20% every 2 waves (карта 2 — горж)
+function calcHPGorge(baseHP, wave) {
+  return Math.round(baseHP * Math.pow(1.20, Math.floor((wave - 1) / 2)));
 }
 
 // ─── Pixel-art enemy sprites ──────────────────────────────────────────────────
@@ -772,6 +794,359 @@ function drawEnemySprite(ctx, type, size, tick, enemy) {
       R(2,6,2,3-legOff,'#6b4226');
       break;
     }
+
+    // ── Map 2 Desert enemies ──────────────────────────────────────────────────
+
+    case 'trader': {
+      // Orange merchant with bag
+      const bob = Math.sin(t * 1.2) * 1;
+      R(-3,-2+bob,7,8,'#e67e22');    // body
+      C(1,-5+bob,3.5,'#f0c060');     // head
+      R(-3,-7+bob,7,3,'#d35400');    // cap
+      // Bag on back
+      C(-6,1+bob,5,'#8d6e47');
+      C(-6,1+bob,3,'#a0845c');
+      R(-4,4+bob,3,2,'#6b4226');     // strap
+      R(-3,6,2,3,'#d35400');         // left leg
+      R(2,6,2,3,'#d35400');
+      // Coin glint
+      ctx.fillStyle='#f1c40f';
+      ctx.beginPath(); ctx.arc(-6,1+bob,1.5,0,Math.PI*2); ctx.fill();
+      break;
+    }
+
+    case 'camel_rider': {
+      // Brown camel with rider on top
+      // Camel body
+      R(-9,3,18,7,'#c8a25e');
+      // Hump
+      ctx.fillStyle='#b8902e';
+      ctx.beginPath(); ctx.arc(0,-1,7,Math.PI,0); ctx.fill();
+      R(-8,3,5,5,'#c8a25e');  // front leg
+      R(4,3,5,5,'#c8a25e');   // rear leg
+      R(10,1,5,4,'#b8902e');  // neck
+      C(13,-1,3,'#c8a25e');   // camel head
+      // Rider
+      R(-3,-10,6,8,'#7b3f00');
+      C(0,-13,3,'#f0a060');
+      R(-2,-15,4,3,'#5a2d00');  // turban
+      break;
+    }
+
+    case 'rider_foot': {
+      // Dismounted rider walking
+      const step = Math.sin(t * 2.0) * 2;
+      R(-2,-2,6,8,'#7b3f00');
+      C(1,-5,3,'#f0a060');
+      R(-2,-8,5,3,'#5a2d00');
+      R(-3,6,2,3+step,'#5a1f00');
+      R(2,6,2,3-step,'#5a1f00');
+      break;
+    }
+
+    case 'mummy': {
+      // White mummy with bandages
+      R(-4,-3,9,11,'#e8e0c8');
+      C(1,-6,4,'#f0ead8');
+      // Bandage lines
+      ctx.strokeStyle='#c8bc9a'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(-4,-2); ctx.lineTo(5,-2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-4,1); ctx.lineTo(5,1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-4,4); ctx.lineTo(5,4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-4,-5); ctx.lineTo(5,-5); ctx.stroke();
+      // Eye slit (glowing)
+      R(-2,-7,5,2,'#2c3e50');
+      ctx.fillStyle='rgba(180,220,50,0.8)';
+      ctx.beginPath(); ctx.arc(0,-6,1.5,0,Math.PI*2); ctx.fill();
+      // Dragging wraps
+      R(-4,8,2,4,'#e0d8b8');
+      R(3,8,2,4,'#e0d8b8');
+      break;
+    }
+
+    case 'sand_spirit': {
+      // Semi-transparent yellow wisp
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      const sw = Math.sin(t * 0.6) * 2;
+      ctx.fillStyle='#f1c40f';
+      ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,230,50,0.7)';
+      ctx.beginPath(); ctx.arc(sw,-2,4,0,Math.PI*2); ctx.fill();
+      // Swirl trails
+      ctx.strokeStyle='rgba(255,200,0,0.5)'; ctx.lineWidth=1.5;
+      for (let i=0;i<3;i++) {
+        const a = i*Math.PI*2/3+t*0.3;
+        ctx.beginPath(); ctx.arc(0,0,9,a,a+Math.PI*0.7); ctx.stroke();
+      }
+      ctx.restore();
+      break;
+    }
+
+    case 'spearman': {
+      // Red-brown warrior with spear, different from lancer
+      const sleg = Math.sin(t * 1.5) * 2;
+      R(-4,-2,9,9,'#8b3a0a');
+      C(0,-6,3.5,'#c88055');
+      R(-4,-9,9,4,'#5a1a00');
+      // Round shield
+      ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.arc(-7,0,5,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#922b21'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(-7,0,5,0,Math.PI*2); ctx.stroke();
+      // Spear (diagonal)
+      ctx.strokeStyle='#8b6914'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(3,-11); ctx.lineTo(7,10); ctx.stroke();
+      ctx.fillStyle='#d4ac0d';
+      ctx.beginPath(); ctx.moveTo(1,-11); ctx.lineTo(3,-18); ctx.lineTo(5,-11); ctx.closePath(); ctx.fill();
+      R(-3,7,2,3+sleg,'#6b1a00');
+      R(2,7,2,3-sleg,'#6b1a00');
+      break;
+    }
+
+    case 'pharaoh': {
+      // Gold pharaoh with crown, pulsing aura
+      const aura = 0.3 + Math.abs(Math.sin(t*0.5))*0.3;
+      ctx.save(); ctx.globalAlpha=aura;
+      ctx.fillStyle='#f1c40f';
+      ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      R(-5,-3,11,11,'#d4ac0d');
+      // Nemes crown
+      R(-5,-11,11,9,'#f1c40f');
+      R(-7,-6,3,9,'#d4ac0d');
+      R(5,-6,3,9,'#d4ac0d');
+      R(-4,-11,9,4,'#2c3e50');  // blue stripe
+      // Face
+      R(-3,-5,7,5,'#c8a25e');
+      R(-2,-4,5,2,'#2c3e50');   // eye stripe
+      // Crook & flail symbols
+      ctx.strokeStyle='#8b6914'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(5,-1); ctx.lineTo(5,8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(4,-1); ctx.arc(4,-3,2,Math.PI/2,3*Math.PI/2,true); ctx.stroke();
+      break;
+    }
+
+    case 'anubis': {
+      // Dark blue, jackal head
+      R(-4,-2,9,11,'#1a237e');
+      // Jackal head (elongated snout)
+      R(-4,-10,9,8,'#283593');
+      R(2,-8,6,4,'#1a237e');    // snout
+      // Pointed ears
+      ctx.fillStyle='#1a237e';
+      ctx.beginPath(); ctx.moveTo(-4,-10); ctx.lineTo(-7,-17); ctx.lineTo(-1,-10); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(3,-10);  ctx.lineTo(6,-17);  ctx.lineTo(9,-10);  ctx.fill();
+      // Golden eyes
+      C(-1,-7,1.5,'#f1c40f'); C(4,-7,1.5,'#f1c40f');
+      // Staff of Anubis
+      ctx.strokeStyle='#d4ac0d'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(8,-12); ctx.lineTo(8,9); ctx.stroke();
+      C(8,-13,3,'#d4ac0d');
+      // Revive glow if applicable
+      if (enemy && enemy._revived) {
+        ctx.save(); ctx.shadowColor='#f1c40f'; ctx.shadowBlur=12;
+        ctx.strokeStyle='rgba(241,196,15,0.6)'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); ctx.stroke();
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'sphinx': {
+      // Golden winged lion (air)
+      const sf = Math.sin(t * 0.12) * 5;
+      // Wings
+      ctx.fillStyle='#d4ac0d';
+      ctx.beginPath(); ctx.moveTo(-2,-1); ctx.lineTo(-15,-8+sf); ctx.lineTo(-12,5+sf); ctx.lineTo(-3,3); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(2,-1);  ctx.lineTo(15,-8-sf);  ctx.lineTo(12,5-sf);  ctx.lineTo(3,3);  ctx.fill();
+      ctx.fillStyle='#f1c40f';
+      ctx.beginPath(); ctx.moveTo(-2,-1); ctx.lineTo(-12,-4+sf); ctx.lineTo(-9,2+sf); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(2,-1);  ctx.lineTo(12,-4-sf);  ctx.lineTo(9,2-sf);  ctx.fill();
+      // Lion body
+      R(-5,-1,12,8,'#c8a25e');
+      // Human head
+      C(1,-6,4,'#c8a25e');
+      R(-3,-9,7,4,'#d4ac0d');   // nemes headdress
+      R(-2,-8,5,3,'#2c3e50');   // eye stripe
+      C(-1,-7,1,'#27ae60'); C(3,-7,1,'#27ae60');
+      // Lion paws
+      R(-6,7,4,3,'#b8902e');
+      R(5,7,4,3,'#b8902e');
+      break;
+    }
+
+    case 'desert_giant': {
+      // Huge sand-coloured humanoid
+      R(-14,-10,29,24,'#c8a25e');
+      R(-15,-18,30,11,'#b8902e');   // head
+      C(-6,-13,3,'#8b6914'); C(6,-13,3,'#8b6914');  // eyes
+      C(-6,-13,1.5,'#e74c3c'); C(6,-13,1.5,'#e74c3c');  // iris
+      R(-4,-9,9,4,'#a07830');       // nose area
+      R(-7,-5,15,3,'#a07830');      // mouth
+      R(-20,-6,8,18,'#b8902e');     // arms
+      R(13,-6,8,18,'#b8902e');
+      // Rock fists
+      R(-21,8,8,8,'#8b7355');
+      R(14,8,8,8,'#8b7355');
+      R(-12,14,10,10,'#b8902e');    // legs
+      R(3,14,10,10,'#b8902e');
+      break;
+    }
+
+    case 'ra_priest': {
+      // White robe, sun disc staff
+      ctx.fillStyle='#ecf0f1';
+      ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(-6,9); ctx.lineTo(6,9); ctx.closePath(); ctx.fill();
+      C(0,-9,4,'#f0c060');          // face
+      R(-1,-12,2,3,'#d4ac0d');      // neck/collar
+      // Sun disc on staff
+      ctx.strokeStyle='#f1c40f'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(9,-12); ctx.lineTo(9,9); ctx.stroke();
+      const sp = 0.7 + Math.sin(t*0.4)*0.3;
+      ctx.save(); ctx.shadowColor='#f39c12'; ctx.shadowBlur=10*sp;
+      C(9,-13,5,'#f1c40f');
+      C(9,-13,3,'#f39c12');
+      // Sun rays
+      ctx.strokeStyle='#f1c40f'; ctx.lineWidth=1;
+      for(let i=0;i<8;i++){
+        const ra=i*Math.PI/4;
+        ctx.beginPath(); ctx.moveTo(9+Math.cos(ra)*5,-13+Math.sin(ra)*5); ctx.lineTo(9+Math.cos(ra)*9,-13+Math.sin(ra)*9); ctx.stroke();
+      }
+      ctx.restore();
+      // Robe detail
+      ctx.strokeStyle='#d4ac0d'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(-4,9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(4,9); ctx.stroke();
+      break;
+    }
+
+    case 'scarab': {
+      // Small dark green beetle
+      R(-4,-2,8,5,'#1e6f00');      // shell
+      // Wing split
+      ctx.strokeStyle='#145a00'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(0,-2); ctx.lineTo(0,3); ctx.stroke();
+      // Head
+      C(0,-4,2,'#1e6f00');
+      // Antennae
+      ctx.strokeStyle='#145a00'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(-1,-5); ctx.lineTo(-4,-8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(1,-5); ctx.lineTo(4,-8); ctx.stroke();
+      // Legs (3 pairs)
+      ctx.strokeStyle='#1e6f00'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(-4,-1); ctx.lineTo(-7,1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-4,1); ctx.lineTo(-7,3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(4,-1); ctx.lineTo(7,1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(4,1); ctx.lineTo(7,3); ctx.stroke();
+      break;
+    }
+
+    case 'sand_golem': {
+      // Large sand stone golem
+      R(-12,-9,25,22,'#c8a25e');
+      // Stone texture chunks
+      R(-12,-9,13,11,'#b8902e');
+      R(1,2,12,11,'#b8902e');
+      R(-1,-1,2,2,'#8b6914');
+      R(-12,-1,25,2,'#8b6914');
+      R(-1,-9,2,22,'#8b6914');
+      // Glowing sand eyes
+      C(-4,-3,3,'#f39c12'); C(5,-3,3,'#f39c12');
+      C(-4,-3,1.5,'#f1c40f'); C(5,-3,1.5,'#f1c40f');
+      // Heavy arms
+      R(-17,-4,6,9,'#b8902e');
+      R(12,-4,6,9,'#b8902e');
+      break;
+    }
+
+    case 'sand_golem_mini': {
+      // Small sand stone golem
+      R(-6,-5,13,11,'#c8a25e');
+      R(-6,-5,7,5,'#b8902e');
+      R(1,1,6,5,'#b8902e');
+      C(-2,-1,1.5,'#f39c12'); C(3,-1,1.5,'#f39c12');
+      R(-9,-2,4,5,'#b8902e');
+      R(6,-2,4,5,'#b8902e');
+      break;
+    }
+
+    case 'dark_mage': {
+      // Purple teleporting mage
+      ctx.fillStyle='#4a235a';
+      ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(-6,8); ctx.lineTo(6,8); ctx.closePath(); ctx.fill();
+      C(0,-8,4,'#d2b4de');
+      R(-1,-12,2,3,'#8e44ad');
+      ctx.fillStyle='#3d1a57';
+      ctx.beginPath(); ctx.moveTo(-5,-10); ctx.lineTo(-8,-6); ctx.lineTo(8,-6); ctx.lineTo(5,-10); ctx.closePath(); ctx.fill();
+      // Teleport staff (dark, crackling)
+      R(9,-11,2,19,'#1a1a2e');
+      const tp = 0.8 + Math.sin(t*1.2)*0.2;
+      ctx.save(); ctx.shadowColor='#8e44ad'; ctx.shadowBlur=14*tp;
+      ctx.fillStyle=`rgba(142,68,173,${tp})`;
+      ctx.beginPath(); ctx.arc(10,-12,5,0,Math.PI*2); ctx.fill();
+      C(10,-12,2.5,'#d7bde2');
+      ctx.restore();
+      // Robe seams
+      ctx.strokeStyle='#7d3c98'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(-3,8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(3,8); ctx.stroke();
+      break;
+    }
+
+    case 'tomb_guardian': {
+      // Dark gold armored guardian
+      R(-5,-3,11,12,'#9a7d0a');     // body armour
+      R(-6,-10,13,9,'#b7950b');     // helmet
+      R(-4,-8,9,5,'#1a1a2e');       // visor
+      C(0,-6,2,'#e74c3c');          // gem in visor
+      R(-8,-2,4,9,'#8d7000');       // left pauldron
+      R(5,-2,4,9,'#8d7000');
+      // Khepesh sword
+      ctx.strokeStyle='#d4ac0d'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(9,-10); ctx.lineTo(9,4); ctx.lineTo(15,2); ctx.stroke();
+      ctx.fillStyle='#d4ac0d';
+      ctx.beginPath(); ctx.moveTo(8,-10); ctx.lineTo(9,-16); ctx.lineTo(10,-10); ctx.closePath(); ctx.fill();
+      // Shield
+      R(-12,-5,5,13,'#b7950b');
+      R(-12,-5,5,3,'#d4ac0d');
+      // Legs
+      R(-4,9,4,6,'#8d7000');
+      R(1,9,4,6,'#8d7000');
+      break;
+    }
+
+    case 'desert_dragon': {
+      // Large sand-toned winged dragon (air)
+      const df = Math.sin(t * 0.11) * 6;
+      // Wings
+      ctx.fillStyle='#b8902e';
+      ctx.beginPath(); ctx.moveTo(-3,-1); ctx.lineTo(-18,-9+df); ctx.lineTo(-15,7+df); ctx.lineTo(-5,4); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(3,-1);  ctx.lineTo(18,-9-df);  ctx.lineTo(15,7-df);  ctx.lineTo(5,4);  ctx.fill();
+      ctx.fillStyle='#d4ac0d';
+      ctx.beginPath(); ctx.moveTo(-3,-1); ctx.lineTo(-14,-4+df); ctx.lineTo(-11,3+df); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(3,-1);  ctx.lineTo(14,-4-df);  ctx.lineTo(11,3-df);  ctx.fill();
+      // Body
+      R(-5,-3,12,10,'#c8a25e');
+      // Head
+      R(5,-6,9,7,'#b8902e');
+      R(11,-4,6,3,'#8b6914');       // jaw
+      // Spine ridges
+      ctx.fillStyle='#8b6914';
+      for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(-5+i*2,-3);ctx.lineTo(-3+i*2,-8);ctx.lineTo(-1+i*2,-3);ctx.fill();}
+      // Tail
+      R(-14,2,10,5,'#c8a25e');
+      R(-19,3,7,4,'#b8902e');
+      ctx.fillStyle='#b8902e';
+      ctx.beginPath(); ctx.moveTo(-20,3); ctx.lineTo(-24,-1); ctx.lineTo(-20,7); ctx.fill();
+      // Eye (amber)
+      C(9,-4,1.5,'#e67e22');
+      // Flame breath
+      ctx.fillStyle='rgba(210,140,30,0.7)';
+      ctx.beginPath(); ctx.arc(19,-3,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(241,196,15,0.8)';
+      ctx.beginPath(); ctx.arc(18,-3,2,0,Math.PI*2); ctx.fill();
+      break;
+    }
   }
 }
 
@@ -942,13 +1317,18 @@ class Enemy {
         ? (def.baseHP + wave * 80) * 2
         : def.linearHP
           ? def.baseHP + wave * (def.hpPerWave || 0)
-          : calcHP(def.baseHP, wave);
+          : def.mapOnly === 'gorge'
+            ? calcHPGorge(def.baseHP, wave)
+            : calcHP(def.baseHP, wave);
     this.hp    = this.maxHP;
     // % рег. от maxHP в секунду
     this.regen = def.regenPct ? def.regenPct / 100 * this.maxHP : 0;
     this.regenPct = def.regenPct || 0;
-    // Скорость: финальные боссы фиксированные, остальные × (1.08 за каждые 5 волн)
-    this.speed = def.isFinalBoss ? def.speed : def.speed * Math.pow(1.08, Math.floor((wave - 1) / 5));
+    // Скорость: финальные боссы фиксированные; горж-враги +5%/5 волн; остальные +8%/5 волн
+    this.speed = def.isFinalBoss ? def.speed
+      : def.mapOnly === 'gorge'
+        ? def.speed * Math.pow(1.05, Math.floor((wave - 1) / 5))
+        : def.speed * Math.pow(1.08, Math.floor((wave - 1) / 5));
     this.baseSpeed = this.speed;
     this.armor  = def.armor || 0;
     this.lastArmorBlock = 0;
@@ -989,6 +1369,18 @@ class Enemy {
     this.blocked       = false; this.blockTimer = 0; this.blockedFactor = 1;
     this.cursed        = false; this.curseTimer = 0; this.curseFactor   = 1;
     this.scorpionStacks = 0;    this.scorpionStackTimer = 0;
+    // ── Map 2 desert enemy specials ──────────────────────────────────────────
+    this.gorgeSpeedMult    = 1;     // pharaoh speed aura multiplier (reset each frame)
+    this._revived          = false; // anubis: revived once flag
+    this.teleportTimer     = def.teleportInterval || 0;  // dark mage teleport
+    this._deathSpawnDone   = false; // camel_rider / sand_golem death spawn flag
+    // Tomb guardian: start invisible for N seconds
+    if (def.startInvis) {
+      this.invis         = true;
+      this.startInvisTimer = def.startInvis;
+    } else {
+      this.startInvisTimer = 0;
+    }
   }
 
   update(dt) {
@@ -1085,6 +1477,23 @@ class Enemy {
       if (this.slowTimer <= 0) this.slowFactor = 1;
     }
 
+    // ── Map 2 desert specials ─────────────────────────────────────────────────
+    // Tomb guardian: start invis countdown
+    if (this.startInvisTimer > 0) {
+      this.startInvisTimer -= dt;
+      if (this.startInvisTimer <= 0) { this.startInvisTimer = 0; this.invis = false; }
+    }
+    // Dark mage: teleport forward every N seconds
+    if (this.teleportTimer > 0 && !this.dead) {
+      this.teleportTimer -= dt;
+      if (this.teleportTimer <= 0) {
+        this.teleportTimer = ENEMY_DEFS[this.type].teleportInterval;
+        this.pathIndex = Math.min(this.pathIndex + 5, this.path.length - 2);
+        this.x = this.path[this.pathIndex].x;
+        this.y = this.path[this.pathIndex].y;
+      }
+    }
+
     // ── Map 2 DoTs / states ───────────────────────────────────────────────────
     if (this.scorpionStacks > 0) {
       this.scorpionStackTimer -= dt;
@@ -1098,7 +1507,7 @@ class Enemy {
       return; // skip movement while blocked
     }
 
-    const spd = this.speed * this.slowFactor;
+    const spd = this.speed * this.slowFactor * (this.gorgeSpeedMult || 1);
 
     if (this.pathIndex >= this.path.length - 1) {
       this.reached = true;
@@ -1142,7 +1551,8 @@ class Enemy {
   }
 
   applyBurn(dps, duration) {
-    this.burnDps   = Math.max(this.burnDps, dps);
+    const mult = ENEMY_DEFS[this.type]?.fireDmgMult || 1;
+    this.burnDps   = Math.max(this.burnDps, dps * mult);
     this.burnTimer = Math.max(this.burnTimer, duration);
   }
 
@@ -1159,7 +1569,16 @@ class Enemy {
     if (this.blocked && this.blockedFactor > 1) dmg *= this.blockedFactor;
     this.lastArmorBlock = armorBlock;
     this.hp -= dmg;
-    if (this.hp <= 0) { this.hp = 0; this.dead = true; }
+    if (this.hp <= 0) {
+      // Анубис: воскрешение один раз с 30% HP
+      if (ENEMY_DEFS[this.type]?.revive && !this._revived) {
+        this._revived = true;
+        this.hp = Math.round(this.maxHP * 0.3);
+        return;
+      }
+      this.hp = 0;
+      this.dead = true;
+    }
   }
 
   applyBlock(duration, damageFactor = 1) {
@@ -1205,23 +1624,41 @@ function buildWave(wave, enemyMult = 1, mapId = 'ironhold') {
     t += INTERVAL * 4;
   }
 
-  const ground = Object.keys(ENEMY_DEFS).filter(
-    k => k !== 'overlord' && !ENEMY_DEFS[k].air && !ENEMY_DEFS[k].isFinalBoss && ENEMY_DEFS[k].startWave <= wave
-    && (!ENEMY_DEFS[k].mapOnly || ENEMY_DEFS[k].mapOnly === mapId)
-  );
-  const air = Object.keys(ENEMY_DEFS).filter(
-    k => ENEMY_DEFS[k].air && !ENEMY_DEFS[k].isFinalBoss && ENEMY_DEFS[k].startWave <= wave
-  );
+  // Карта 2 (горж): только свои уникальные враги, карта 1 не появляется
+  const isGorge = mapId === 'gorge';
+  const ground = Object.keys(ENEMY_DEFS).filter(k => {
+    const d = ENEMY_DEFS[k];
+    if (k === 'overlord' || d.air || d.isFinalBoss || d.noWaveSpawn) return false;
+    if (d.startWave > wave) return false;
+    if (isGorge) return d.mapOnly === 'gorge';
+    return !d.mapOnly || d.mapOnly === mapId;
+  });
+  const air = Object.keys(ENEMY_DEFS).filter(k => {
+    const d = ENEMY_DEFS[k];
+    if (!d.air || d.isFinalBoss || d.noWaveSpawn) return false;
+    if (d.startWave > wave) return false;
+    if (isGorge) return d.mapOnly === 'gorge';
+    return true;
+  });
   const available = air.length > 0 ? [...ground, ...air] : ground;
 
   for (let i = 0; i < totalCount; i++) {
     const type1 = available[i % available.length];
-    queue.push({ type: type1, time: t });
+    const def1  = ENEMY_DEFS[type1];
+    // Скарабей: появляется группой по 5
+    const groupSize = def1?.spawnGroup || 1;
+    for (let g = 0; g < groupSize; g++) {
+      queue.push({ type: type1, time: t + g * 4 });
+    }
 
     if (dualSpawn && available.length >= 2) {
       const offset = Math.floor(available.length / 2);
       const type2  = available[(i + offset) % available.length];
-      queue.push({ type: type2, time: t + 3 });
+      const def2   = ENEMY_DEFS[type2];
+      const g2     = def2?.spawnGroup || 1;
+      for (let g = 0; g < g2; g++) {
+        queue.push({ type: type2, time: t + 3 + g * 4 });
+      }
     }
 
     t += INTERVAL;

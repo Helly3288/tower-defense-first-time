@@ -1485,6 +1485,7 @@ class Tower {
       let primary = null, bestP = -1;
       enemies.forEach(e => {
         if (e.dead || e.reached || e.air || e.invis) return;
+        if (e.type === 'sand_spirit' && effRange < 72) return;
         const dx = e.x - this.x, dy = e.y - this.y;
         if (Math.sqrt(dx*dx+dy*dy) > effRange) return;
         const p = e.pathIndex + 0;
@@ -1527,9 +1528,11 @@ class Tower {
       if (e.dead || e.reached) return;
       if (this.antiairOnly && !e.air) return;   // зенитка бьёт только воздушных
       if (!this.antiairOnly && e.air) return;   // наземные башни игнорируют воздушных
-      if (e.invis) return;                      // Ксара невидима — башни не атакуют
+      if (e.invis) return;                      // Ксара/хранитель гробниц невидимы
       const dx = e.x - this.x, dy = e.y - this.y;
       const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
+      // Песчаный дух: невидим для башен с радиусом меньше 2 клеток (72px)
+      if (e.type === 'sand_spirit' && effRange < 72) return;
       const visRange = (e.elite?.type === 'invis') ? Math.min(effRange, 54) : effRange;
       if (Math.sqrt(dx*dx + dy*dy) <= visRange) {
         const ni = Math.min(e.pathIndex + 1, e.path.length - 1);

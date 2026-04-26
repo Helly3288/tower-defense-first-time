@@ -610,7 +610,10 @@ class Game {
   }
 
   _enemyGold(e) {
-    const base = e._raidReward ? e.reward * 2 : e.reward;
+    const def  = ENEMY_DEFS[e.type];
+    const base = e._raidReward
+      ? e.reward * 2
+      : (def?.doubleGold ? e.reward * 2 : e.reward);
     const cap  = this.currentMap?.bossGoldCap;
     if (cap && e.isBoss) return e._raidReward ? cap * 2 : cap;
     return Math.round(base * this.mapGoldMult);
@@ -733,6 +736,36 @@ class Game {
     }
 
     this.spawnEnemies(dt);
+
+    // Карта 2: Фараон (аура скорости) и Жрец Ра (лечение союзников)
+    if (this.currentMap?.id === 'gorge') {
+      // Сбросить множитель скорости
+      this.enemies.forEach(e => { e.gorgeSpeedMult = 1; });
+      this.enemies.forEach(e => {
+        if (e.dead || e.reached) return;
+        const def = ENEMY_DEFS[e.type];
+        // Фараон: аура +20% скорость в радиусе 2 клеток
+        if (def?.speedAura) {
+          this.enemies.forEach(other => {
+            if (other === e || other.dead || other.reached) return;
+            const dx = other.x - e.x, dy = other.y - e.y;
+            if (Math.sqrt(dx*dx+dy*dy) <= def.speedAura.radius) {
+              other.gorgeSpeedMult = Math.max(other.gorgeSpeedMult, def.speedAura.mult);
+            }
+          });
+        }
+        // Жрец Ра: лечит союзников в радиусе 2 клеток на 3%/сек
+        if (def?.healer) {
+          this.enemies.forEach(other => {
+            if (other === e || other.dead || other.reached) return;
+            const dx = other.x - e.x, dy = other.y - e.y;
+            if (Math.sqrt(dx*dx+dy*dy) <= def.healer.radius) {
+              other.hp = Math.min(other.maxHP, other.hp + def.healer.pct * other.maxHP * dt);
+            }
+          });
+        }
+      });
+    }
 
     // Update enemies
     this.enemies.forEach(e => e.update(dt));
@@ -957,22 +990,45 @@ class Game {
       });
     }
 
-    // Копьеносец: взрыв при смерти (карта 2)
+    // Смерть врагов на карте 2: взрывы, спавны
     if (this.currentMap?.id === 'gorge') {
+      const toSpawn = [];
       this.enemies.forEach(e => {
-        if (e.dead && !e._deathExplosionDone) {
-          const def = ENEMY_DEFS[e.type];
-          if (def?.deathExplosion) {
-            e._deathExplosionDone = true;
-            const { damage, radius } = def.deathExplosion;
-            this.towers.forEach(t => {
-              const dx = t.x - e.x, dy = t.y - e.y;
-              if (Math.sqrt(dx * dx + dy * dy) <= radius) t.takeDamage(damage);
-            });
-            this.spawnParticles(e.x, e.y, '#c0392b');
+        if (!e.dead) return;
+        const def = ENEMY_DEFS[e.type];
+        // Взрыв при смерти (lancer / spearman)
+        if (def?.deathExplosion && !e._deathExplosionDone) {
+          e._deathExplosionDone = true;
+          const { damage, radius } = def.deathExplosion;
+          this.towers.forEach(t => {
+            const dx = t.x - e.x, dy = t.y - e.y;
+            if (Math.sqrt(dx * dx + dy * dy) <= radius) t.takeDamage(damage);
+          });
+          this.spawnParticles(e.x, e.y, '#c0392b');
+        }
+        // Верблюжий всадник: пеший всадник продолжает идти
+        if (def?.spawnOnDeath === 'rider_foot' && !e._deathSpawnDone) {
+          e._deathSpawnDone = true;
+          const minion = new Enemy('rider_foot', this.wave, this.path);
+          minion.pathIndex = Math.min(e.pathIndex, this.path.length - 2);
+          minion.x = e.x; minion.y = e.y;
+          toSpawn.push(minion);
+          this.spawnParticles(e.x, e.y, '#c8a25e');
+        }
+        // Песчаный голем: распадается на 3 малых голема
+        if (def?.spawnOnDeath === 'sand_golem_mini' && !e._deathSpawnDone) {
+          e._deathSpawnDone = true;
+          for (let i = 0; i < 3; i++) {
+            const m = new Enemy('sand_golem_mini', this.wave, this.path);
+            m.pathIndex = Math.min(e.pathIndex, this.path.length - 2);
+            m.x = e.x + (Math.random() - 0.5) * 20;
+            m.y = e.y + (Math.random() - 0.5) * 20;
+            toSpawn.push(m);
           }
+          this.spawnParticles(e.x, e.y, '#c8a25e');
         }
       });
+      toSpawn.forEach(m => this.enemies.push(m));
     }
 
     // Cleanup
