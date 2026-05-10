@@ -1842,6 +1842,12 @@ class Enemy {
     } else {
       this.startInvisTimer = 0;
     }
+    // ── Map 3 tower effect fields (applied by maze towers) ───────────────────
+    this.armorDebuffFactor = 1;    // curse_tower: reduces effective armor (0.6 = 40% reduction)
+    this.armorDebuffTimer  = 0;
+    this.paralyzedTimer    = 0;    // fear_gate / obsidian_tower: cannot move
+    this.paralyzedDmgMult  = 1;   // fear_gate legendary: extra damage taken while paralyzed
+    this.frozenByObsidianLeg = false; // obsidian legendary: explode on next hit
     // ── Map 3 maze enemy specials ─────────────────────────────────────────────
     this.mazeShieldActive    = def.shieldBlock || false;  // dark_knight: first hit fully blocked
     this.mazeNecroTimer      = (type === 'necro_lord')      ? 12  : 0;  // necro_lord summon timer (sec)
@@ -2024,11 +2030,20 @@ class Enemy {
       else { this.takeDamage(this.scorpionStacks * 0.02 * this.maxHP * dt, true); if (this.dead) return; }
     }
     if (this.cursed) { this.curseTimer -= dt; if (this.curseTimer <= 0) { this.cursed = false; this.curseFactor = 1; } }
+    if (this.armorDebuffTimer > 0) {
+      this.armorDebuffTimer -= dt;
+      if (this.armorDebuffTimer <= 0) this.armorDebuffFactor = 1;
+    }
+    if (this.paralyzedTimer > 0) {
+      this.paralyzedTimer -= dt;
+      if (this.paralyzedTimer <= 0) { this.paralyzedDmgMult = 1; }
+    }
     if (this.blocked) {
       this.blockTimer -= dt;
       if (this.blockTimer <= 0) { this.blocked = false; this.blockedFactor = 1; }
       return; // skip movement while blocked
     }
+    if (this.paralyzedTimer > 0) return; // fear_gate / obsidian freeze
 
     const spd = this.speed * this.slowFactor * (this.gorgeSpeedMult || 1);
 
@@ -2096,11 +2111,13 @@ class Enemy {
     // Ghost: 50% of all damage ignored (not armor)
     const def = ENEMY_DEFS[this.type];
     if (def?.ghostDamageReduction) dmg *= (1 - def.ghostDamageReduction);
-    const armorBlock = armorPierce ? 0 : dmg * this.armor;
+    const effectiveArmor = this.armor * (this.armorDebuffFactor || 1);
+    const armorBlock = armorPierce ? 0 : dmg * effectiveArmor;
     dmg -= armorBlock;
     if (this.eliteShieldTimer > 0) dmg *= 0.5;
     if (this.cursed)                dmg *= this.curseFactor;
     if (this.blocked && this.blockedFactor > 1) dmg *= this.blockedFactor;
+    if (this.paralyzedTimer > 0 && this.paralyzedDmgMult > 1) dmg *= this.paralyzedDmgMult;
     this.lastArmorBlock = armorBlock;
     // Banshee: 30% chance to request tower slow (handled in game.js)
     if (def?.bansheeSlowChance && Math.random() < def.bansheeSlowChance) {
@@ -2129,6 +2146,16 @@ class Enemy {
     this.cursed      = true;
     this.curseFactor = Math.max(this.curseFactor, factor);
     this.curseTimer  = Math.max(this.curseTimer, duration);
+  }
+
+  applyArmorDebuff(factor, duration) {
+    this.armorDebuffFactor = Math.min(this.armorDebuffFactor, factor);
+    this.armorDebuffTimer  = Math.max(this.armorDebuffTimer, duration);
+  }
+
+  applyParalyze(duration, dmgMult = 1) {
+    this.paralyzedTimer   = Math.max(this.paralyzedTimer, duration);
+    this.paralyzedDmgMult = Math.max(this.paralyzedDmgMult, dmgMult);
   }
 
   applyScorpionStack(maxStacks, resetDuration) {

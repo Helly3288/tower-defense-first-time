@@ -223,10 +223,13 @@ class UI {
   switchPanel(mapId) {
     const panel1 = document.getElementById('panel');
     const panel2 = document.getElementById('panel2');
+    const panel3 = document.getElementById('panel3');
     if (!panel1 || !panel2) return;
     const isGorge = (mapId === 'gorge');
-    panel1.style.display = isGorge ? 'none' : 'block';
+    const isMaze  = (mapId === 'maze');
+    panel1.style.display = (!isGorge && !isMaze) ? 'block' : 'none';
     panel2.style.display = isGorge ? 'block' : 'none';
+    if (panel3) panel3.style.display = isMaze ? 'block' : 'none';
     // Сбросить выбранную башню при переходе
     this.selectedTowerType = null;
     Object.values(this.towerButtons).forEach(b => b.classList.remove('active'));

@@ -183,6 +183,84 @@ Object.assign(TOWER_DEFS, {
   },
 });
 
+// ─── Map 3 tower definitions ──────────────────────────────────────────────────
+Object.assign(TOWER_DEFS, {
+  bone_cannon: {
+    name: 'Костяная пушка', cost: 75, mapOnly: 'maze',
+    color: '#888888', accentColor: '#666666',
+    damage: 45, range: 108, fireRate: 50,
+    bulletColor: '#cccccc', bulletSize: 5, bulletSpeed: 13,
+    description: 'Снаряд пробивает всех врагов по линии',
+    pierce: true, isBoneCannon: true,
+    legendary: { name: 'Дождь костей', cost: 350, desc: 'Каждый 4-й выстрел — дождь костей (200 урона, р=80px)' },
+  },
+  curse_tower: {
+    name: 'Башня проклятий', cost: 100, mapOnly: 'maze',
+    color: '#1a0033', accentColor: '#330066',
+    damage: 0, range: 108, fireRate: 9999,
+    bulletColor: '#9933ff', bulletSize: 0, bulletSpeed: 0,
+    description: 'Аура: −40% брони и −20% скорости всем в радиусе',
+    isAura: true, isCurseTower: true,
+    curseArmorFactor: 0.6, curseTowerSlowFactor: 0.8,
+    legendary: { name: 'Проклятие прилипает', cost: 450, desc: 'Дебафф сохраняется 6 сек после выхода из ауры' },
+  },
+  shadow_blade: {
+    name: 'Теневой клинок', cost: 125, mapOnly: 'maze',
+    color: '#1a0022', accentColor: '#330044',
+    damage: 35, range: 126, fireRate: 30,
+    bulletColor: '#bb00ff', bulletSize: 5, bulletSpeed: 14,
+    description: 'Одновременно атакует 3 ближайших врага',
+    isShadowBlade: true, shadowBladeTargets: 3,
+    legendary: { name: 'Пять клинков', cost: 500, desc: '5 целей + каждый удар −10% брони цели на 4 сек (стакается)' },
+  },
+  fear_gate: {
+    name: 'Врата ужаса', cost: 150, mapOnly: 'maze',
+    color: '#330000', accentColor: '#660000',
+    damage: 0, range: 144, fireRate: 480,
+    bulletColor: '#ff0000', bulletSize: 0, bulletSpeed: 0,
+    description: 'Раз в 8 сек парализует всех в радиусе на 3 сек',
+    isParalyzeTower: true, paralyzeDuration: 3,
+    legendary: { name: 'Абсолютный ужас', cost: 500, desc: 'Паника 5 сек + парализованные берут +50% урона' },
+  },
+  soul_trap: {
+    name: 'Душехват', cost: 175, mapOnly: 'maze',
+    color: '#0a0a2a', accentColor: '#1a1a4a',
+    damage: 30, range: 108, fireRate: 40,
+    bulletColor: '#3399ff', bulletSize: 5, bulletSpeed: 12,
+    description: '+3g за убийство · 5 убийств → тройной удар по площади',
+    isSoulTrap: true, soulGoldBonus: 3,
+    legendary: { name: 'Взрыв душ', cost: 480, desc: 'При 5 душах — взрыв наносит урон ВСЕМ врагам на экране' },
+  },
+  obsidian_tower: {
+    name: 'Обсидиан', cost: 200, mapOnly: 'maze',
+    color: '#0a0a0a', accentColor: '#111133',
+    damage: 0, range: 144, fireRate: 360,
+    bulletColor: '#00ccff', bulletSize: 0, bulletSpeed: 0,
+    description: 'Луч замораживает всех врагов на линии на 3 сек',
+    isObsidian: true, obsidianFreezeDuration: 3, obsidianDmg: 0, obsidianFrozenDmgMult: 1,
+    legendary: { name: 'Хрупкий лёд', cost: 550, desc: 'Замороженные при получении урона взрываются (150 урона, р=60px)' },
+  },
+  void_rift: {
+    name: 'Разрыв тьмы', cost: 225, mapOnly: 'maze',
+    color: '#0d0011', accentColor: '#220033',
+    damage: 0, range: 144, fireRate: 600,
+    bulletColor: '#9933ff', bulletSize: 0, bulletSpeed: 0,
+    description: 'Раз в 10 сек — 4% maxHP всем врагам на экране',
+    isVoidRift: true, voidRiftDmgPct: 0.04, voidRiftSlowAll: false,
+    legendary: { name: 'Зона тьмы', cost: 600, desc: 'После взрыва — зона тьмы 5 сек: замедляет всех на 40%' },
+  },
+  dark_vortex: {
+    name: 'Тёмный вихрь', cost: 300, mapOnly: 'maze',
+    color: '#0d0033', accentColor: '#1a0055',
+    damage: 0, range: 144, fireRate: 9999,
+    bulletColor: '#cc00ff', bulletSize: 0, bulletSpeed: 0,
+    description: 'Аура: замедляет всех в радиусе на 60%',
+    isAura: true, isDarkVortex: true,
+    darkVortexSlowFactor: 0.4, darkVortexDpsPct: 0,
+    legendary: { name: 'Чёрная дыра', cost: 650, desc: 'Враги в радиусе теряют 2% maxHP/сек' },
+  },
+});
+
 // ─── Upgrade paths (A / B) ────────────────────────────────────────────────────
 const TOWER_PATHS = {
   basic: {
@@ -499,6 +577,200 @@ const TOWER_PATHS = {
       ],
     },
   },
+
+  // ── Map 3: Dark Kingdom towers ───────────────────────────────────────────────
+  bone_cannon: {
+    A: {
+      name: 'Тяжёлые кости', letter: 'А',
+      desc: 'Урон ×1.7 · Радиус +36',
+      color: '#aaaaaa', accentColor: '#888888', bulletColor: '#dddddd',
+      cost: 125,
+      apply: { damageMult: 1.7, range: 36 },
+      upgrades: [
+        { name: 'Костяная дробь', desc: 'Урон +30',    cost: 160, damage: 30 },
+        { name: 'Адская кость',   desc: 'Урон ×1.3',   cost: 250, damageMult: 1.3 },
+      ],
+    },
+    B: {
+      name: 'Взрыв костей', letter: 'Б',
+      desc: 'Осколочный взрыв (радиус 80px) · Урон ×1.5',
+      color: '#774422', accentColor: '#553311', bulletColor: '#cc8844',
+      cost: 150,
+      apply: { damageMult: 1.5, splashBone: 80 },
+      upgrades: [
+        { name: 'Костяной взрыв', desc: 'Взрыв +30px',             cost: 190, splashBoneBonus: 30 },
+        { name: 'Ударная волна',  desc: 'Взрыв ×1.4 · Урон ×1.2', cost: 280, damageMult: 1.2, splashBoneMult: 1.4 },
+      ],
+    },
+  },
+  curse_tower: {
+    A: {
+      name: 'Ужас', letter: 'А',
+      desc: 'Броня −60% · Радиус +30%',
+      color: '#440066', accentColor: '#220044', bulletColor: '#aa44ff',
+      cost: 160,
+      apply: { curseArmorSet: 0.4, rangeMult: 1.3 },
+      upgrades: [
+        { name: 'Глубокое проклятие', desc: 'Броня −75%',              cost: 200, curseArmorSet: 0.25 },
+        { name: 'Вечная немощь',      desc: 'Также замедляет на 30%', cost: 300, curseTowerSlowSet: 0.7 },
+      ],
+    },
+    B: {
+      name: 'Тёмный зов', letter: 'Б',
+      desc: 'Также накладывает проклятие (×1.4 урона) · Радиус +20%',
+      color: '#1a0044', accentColor: '#330066', bulletColor: '#7744cc',
+      cost: 180,
+      apply: { curseTowerAddCurse: true, rangeMult: 1.2 },
+      upgrades: [
+        { name: 'Тёмные руны',              desc: 'Радиус +30%',               cost: 220, rangeMult: 1.3 },
+        { name: 'Всепроникающее проклятие', desc: 'Броня −65% · Проклятие ×1.6', cost: 320, curseArmorSet: 0.35, curseDmgFactor: 1.6 },
+      ],
+    },
+  },
+  shadow_blade: {
+    A: {
+      name: 'Триединство', letter: 'А',
+      desc: '+1 цель · Урон ×1.3',
+      color: '#440066', accentColor: '#330055', bulletColor: '#cc55ff',
+      cost: 200,
+      apply: { shadowBladeTargetsBonus: 1, damageMult: 1.3 },
+      upgrades: [
+        { name: 'Четыре клинка', desc: 'Урон +20',  cost: 240, damage: 20 },
+        { name: 'Вихрь клинков', desc: 'Урон ×1.3', cost: 360, damageMult: 1.3 },
+      ],
+    },
+    B: {
+      name: 'Острота', letter: 'Б',
+      desc: 'Урон ×1.8',
+      color: '#220033', accentColor: '#110022', bulletColor: '#9900ff',
+      cost: 175,
+      apply: { damageMult: 1.8 },
+      upgrades: [
+        { name: 'Мастер клинков', desc: 'Урон +25 · Радиус +18', cost: 220, damage: 25, range: 18 },
+        { name: 'Гильотина',      desc: 'Урон ×1.4',             cost: 340, damageMult: 1.4 },
+      ],
+    },
+  },
+  fear_gate: {
+    A: {
+      name: 'Паника', letter: 'А',
+      desc: 'Паралич 5 сек · Радиус +20%',
+      color: '#660000', accentColor: '#440000', bulletColor: '#ff4444',
+      cost: 220,
+      apply: { paralyzeDurationBonus: 2, rangeMult: 1.2 },
+      upgrades: [
+        { name: 'Великий страх',    desc: 'Паралич +1 сек',         cost: 260, paralyzeDurationBonus: 1 },
+        { name: 'Тотальная паника', desc: 'Перезарядка −2 сек',     cost: 380, fearCooldownBonus: 120 },
+      ],
+    },
+    B: {
+      name: 'Большие врата', letter: 'Б',
+      desc: 'Радиус ×1.5 · Перезарядка −3 сек',
+      color: '#440000', accentColor: '#330000', bulletColor: '#ff2222',
+      cost: 240,
+      apply: { rangeMult: 1.5, fearCooldownBonus: 180 },
+      upgrades: [
+        { name: 'Монументальные врата', desc: 'Радиус +30%',    cost: 280, rangeMult: 1.3 },
+        { name: 'Вечный страх',         desc: 'Паралич +2 сек', cost: 400, paralyzeDurationBonus: 2 },
+      ],
+    },
+  },
+  soul_trap: {
+    A: {
+      name: 'Алчность', letter: 'А',
+      desc: '+5g за убийство · Радиус +30%',
+      color: '#3366ff', accentColor: '#2255cc', bulletColor: '#55aaff',
+      cost: 260,
+      apply: { soulGoldBonusBonus: 5, rangeMult: 1.3 },
+      upgrades: [
+        { name: 'Жадность',      desc: '+4g за убийство',              cost: 300, soulGoldBonusBonus: 4 },
+        { name: 'Золотая жатва', desc: 'Радиус +30% · +3g за убийство', cost: 420, rangeMult: 1.3, soulGoldBonusBonus: 3 },
+      ],
+    },
+    B: {
+      name: 'Тёмная сила', letter: 'Б',
+      desc: 'Урон ×1.4 · Удар душ ×5 урона',
+      color: '#0055cc', accentColor: '#004499', bulletColor: '#0099ff',
+      cost: 240,
+      apply: { damageMult: 1.4, soulPowerMultBonus: 2 },
+      upgrades: [
+        { name: 'Мощь душ',   desc: 'Урон ×1.4',                   cost: 280, damageMult: 1.4 },
+        { name: 'Разрыв душ', desc: 'Урон ×1.4 · Радиус удара +50%', cost: 400, damageMult: 1.4, soulPowerRangeMult: 1.5 },
+      ],
+    },
+  },
+  obsidian_tower: {
+    A: {
+      name: 'Ледяной удар', letter: 'А',
+      desc: 'Замороженные получают 50 урона',
+      color: '#0066aa', accentColor: '#004488', bulletColor: '#00ddff',
+      cost: 300,
+      apply: { obsidianDmgBonus: 50 },
+      upgrades: [
+        { name: 'Кристальный удар', desc: '+30 урон замороженным',          cost: 360, obsidianDmgBonus: 30 },
+        { name: 'Абсолютный лёд',   desc: '+50 урон · Заморозка +1 сек',   cost: 500, obsidianDmgBonus: 50, obsidianFreezeBonus: 1 },
+      ],
+    },
+    B: {
+      name: 'Ледяная уязвимость', letter: 'Б',
+      desc: 'Замороженные берут ×2 урона от всех башен',
+      color: '#003366', accentColor: '#002244', bulletColor: '#0099cc',
+      cost: 280,
+      apply: { obsidianFrozenDmgMult: 2.0 },
+      upgrades: [
+        { name: 'Хрупкий лёд',  desc: 'Радиус +30%',              cost: 340, rangeMult: 1.3 },
+        { name: 'Лёд и пламя',  desc: 'Радиус +30% · Ожог 2%/сек', cost: 480, rangeMult: 1.3, obsidianBurn: true },
+      ],
+    },
+  },
+  void_rift: {
+    A: {
+      name: 'Ширящаяся тьма', letter: 'А',
+      desc: 'Урон 6% maxHP',
+      color: '#7700cc', accentColor: '#550099', bulletColor: '#bb44ff',
+      cost: 350,
+      apply: { voidDmgPctBonus: 0.02 },
+      upgrades: [
+        { name: 'Пропасть',      desc: 'Урон +1% maxHP',                      cost: 420, voidDmgPctBonus: 0.01 },
+        { name: 'Тёмная бездна', desc: 'Урон +1% · Перезарядка −1 сек',      cost: 580, voidDmgPctBonus: 0.01, voidCooldownBonus: 60 },
+      ],
+    },
+    B: {
+      name: 'Цепная пустота', letter: 'Б',
+      desc: 'После взрыва все враги замедлены 50% на 3 сек',
+      color: '#440088', accentColor: '#330066', bulletColor: '#8833ff',
+      cost: 320,
+      apply: { voidSlowAll: true },
+      upgrades: [
+        { name: 'Тьма поглощает', desc: 'Замедление 65%',          cost: 380, voidSlowBonus: 0.15 },
+        { name: 'Тотальная тьма', desc: 'Перезарядка −2 сек',       cost: 520, voidCooldownBonus: 120 },
+      ],
+    },
+  },
+  dark_vortex: {
+    A: {
+      name: 'Поглощение', letter: 'А',
+      desc: 'Замедление 80% · Урон 1% maxHP/сек',
+      color: '#6600cc', accentColor: '#4400aa', bulletColor: '#cc44ff',
+      cost: 450,
+      apply: { darkVortexSlowFactor: 0.2, darkVortexDpsPct: 0.01 },
+      upgrades: [
+        { name: 'Гравитация',  desc: 'Радиус +10% · Урон +0.5%/сек', cost: 520, rangeMult: 1.1, darkVortexDpsPct: 0.005 },
+        { name: 'Чёрная дыра', desc: 'Урон +1% maxHP/сек',            cost: 700, darkVortexDpsPct: 0.01 },
+      ],
+    },
+    B: {
+      name: 'Расширение', letter: 'Б',
+      desc: 'Радиус ×1.5',
+      color: '#3300aa', accentColor: '#220088', bulletColor: '#9944ff',
+      cost: 400,
+      apply: { rangeMult: 1.5 },
+      upgrades: [
+        { name: 'Великий вихрь',     desc: 'Радиус ×1.3',                   cost: 480, rangeMult: 1.3 },
+        { name: 'Бесконечный вихрь', desc: 'Радиус ×1.3 · Замедление 70%', cost: 620, rangeMult: 1.3, darkVortexSlowFactor: 0.3 },
+      ],
+    },
+  },
 };
 
 // ─── Combo system ────────────────────────────────────────────────────────────
@@ -629,6 +901,30 @@ function applyEffect(tower, effect) {
   if (effect.snakePoisonBonus !== undefined) tower.snakePoisonPct = (tower.snakePoisonPct||0.02) + effect.snakePoisonBonus;
   if (effect.maxSnakesBonus   !== undefined) tower.maxSnakes = (tower.maxSnakes||3) + effect.maxSnakesBonus;
   if (effect.burnDuration     !== undefined) tower.burnDuration = effect.burnDuration;
+  // Map 3 tower upgrade effects
+  if (effect.shadowBladeTargetsBonus !== undefined) tower.shadowBladeTargets = (tower.shadowBladeTargets || 3) + effect.shadowBladeTargetsBonus;
+  if (effect.paralyzeDurationBonus   !== undefined) tower.paralyzeDuration   = (tower.paralyzeDuration   || 3) + effect.paralyzeDurationBonus;
+  if (effect.fearCooldownBonus       !== undefined) tower.fireRate            = Math.max(60, tower.fireRate - effect.fearCooldownBonus);
+  if (effect.soulGoldBonusBonus      !== undefined) tower.soulGoldBonus      = (tower.soulGoldBonus      || 3) + effect.soulGoldBonusBonus;
+  if (effect.soulPowerMultBonus      !== undefined) tower.soulPowerMult      = (tower.soulPowerMult      || 0) + effect.soulPowerMultBonus;
+  if (effect.soulPowerRangeMult      !== undefined) tower.soulPowerRangeMult = (tower.soulPowerRangeMult || 1) * effect.soulPowerRangeMult;
+  if (effect.obsidianDmgBonus        !== undefined) tower.obsidianDmg        = (tower.obsidianDmg        || 0) + effect.obsidianDmgBonus;
+  if (effect.obsidianFreezeBonus     !== undefined) tower.obsidianFreezeDuration = (tower.obsidianFreezeDuration || 3) + effect.obsidianFreezeBonus;
+  if (effect.obsidianFrozenDmgMult   !== undefined) tower.obsidianFrozenDmgMult  = Math.max(tower.obsidianFrozenDmgMult || 1, effect.obsidianFrozenDmgMult);
+  if (effect.obsidianBurn            !== undefined) tower.obsidianBurn       = true;
+  if (effect.voidDmgPctBonus         !== undefined) tower.voidRiftDmgPct     = (tower.voidRiftDmgPct     || 0.04) + effect.voidDmgPctBonus;
+  if (effect.voidCooldownBonus       !== undefined) tower.fireRate            = Math.max(60, tower.fireRate - effect.voidCooldownBonus);
+  if (effect.voidSlowAll             !== undefined) tower.voidRiftSlowAll    = true;
+  if (effect.voidSlowBonus           !== undefined) tower.voidRiftSlowFactor = Math.max(0.1, (tower.voidRiftSlowFactor || 0.5) - effect.voidSlowBonus);
+  if (effect.curseArmorSet           !== undefined) tower.curseArmorFactor   = effect.curseArmorSet;
+  if (effect.curseTowerSlowSet       !== undefined) tower.curseTowerSlowFactor = effect.curseTowerSlowSet;
+  if (effect.curseTowerAddCurse      !== undefined) tower.curseTowerAddCurse = true;
+  if (effect.curseDmgFactor          !== undefined) tower.curseTowerDmgFactor = effect.curseDmgFactor;
+  if (effect.splashBone              !== undefined) { tower.pierce = false; tower.boneSplashRadius = effect.splashBone; tower.splashRadius = effect.splashBone; }
+  if (effect.splashBoneBonus         !== undefined) { tower.boneSplashRadius = (tower.boneSplashRadius || 80) + effect.splashBoneBonus; tower.splashRadius = tower.boneSplashRadius; }
+  if (effect.splashBoneMult          !== undefined) { tower.boneSplashRadius = Math.round((tower.boneSplashRadius || 80) * effect.splashBoneMult); tower.splashRadius = tower.boneSplashRadius; }
+  if (effect.darkVortexSlowFactor    !== undefined) tower.darkVortexSlowFactor = effect.darkVortexSlowFactor;
+  if (effect.darkVortexDpsPct        !== undefined) tower.darkVortexDpsPct   = (tower.darkVortexDpsPct   || 0) + effect.darkVortexDpsPct;
 }
 
 // ─── Pierce bullet (travels straight, hits all enemies in path) ───────────────
@@ -982,6 +1278,155 @@ class BeamEffect {
   }
 }
 
+// ─── Ice Beam Effect (Обсидиановая башня) ────────────────────────────────────
+class IceBeamEffect {
+  constructor(x, y, angle, range, hits, dmg = 0, burn = false) {
+    this.x = x; this.y = y;
+    this.angle = angle; this.range = range;
+    this._hits = hits;
+    this.damage = dmg; // fury-modifiable
+    this.burn = burn;
+    this.life = 10; this.dead = false; this._done = false;
+  }
+
+  update(enemies) {
+    this.life--;
+    if (this.life <= 0) this.dead = true;
+    if (!this._done) {
+      this._done = true;
+      if (this.damage > 0 || this.burn) {
+        this._hits.forEach(e => {
+          if (!e.dead && !e.reached) {
+            if (this.damage > 0) e.takeDamage(this.damage);
+            if (this.burn) e.applyBurn(e.maxHP * 0.02, 4);
+          }
+        });
+      }
+      return this._hits.filter(e => !e.dead && !e.reached).concat(this._hits.filter(e => e.dead));
+    }
+    return [];
+  }
+
+  draw(ctx) {
+    const a = this.life / 10;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 28;
+    ctx.strokeStyle = '#00eeff'; ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + Math.cos(this.angle) * this.range, this.y + Math.sin(this.angle) * this.range);
+    ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + Math.cos(this.angle) * this.range, this.y + Math.sin(this.angle) * this.range);
+    ctx.stroke();
+    // Ice crystals along beam
+    ctx.shadowColor = '#00ccff'; ctx.shadowBlur = 6;
+    for (let i = 0.2; i < 1; i += 0.2) {
+      const bx = this.x + Math.cos(this.angle) * this.range * i;
+      const by = this.y + Math.sin(this.angle) * this.range * i;
+      ctx.fillStyle = `rgba(0,220,255,${a * 0.6})`;
+      ctx.beginPath(); ctx.arc(bx, by, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// ─── Void Pulse (Разрыв тьмы) ────────────────────────────────────────────────
+class VoidPulse {
+  constructor(x, y, dmgPct, slowAll, slowFactor, allEnemies) {
+    this.x = x; this.y = y;
+    this.dmgPct = dmgPct; this.slowAll = slowAll; this.slowFactor = slowFactor;
+    this._enemies = allEnemies;
+    this.damage = 0; this.dead = false; this.life = 18; this._done = false;
+  }
+
+  update(enemies) {
+    this.life--;
+    if (this.life <= 0) this.dead = true;
+    if (!this._done) {
+      this._done = true;
+      const hits = [];
+      this._enemies.forEach(e => {
+        if (!e.dead && !e.reached) {
+          e.takeDamage(e.maxHP * this.dmgPct, true);
+          if (this.slowAll) e.applySlow(this.slowFactor, 3);
+          hits.push(e);
+        }
+      });
+      return hits;
+    }
+    return [];
+  }
+
+  draw(ctx) {
+    if (!this._done) return;
+    const progress = 1 - this.life / 18;
+    const r = 350 * progress;
+    const a = (1 - progress) * 0.55;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = '#9933ff'; ctx.lineWidth = 4;
+    ctx.shadowColor = '#cc00ff'; ctx.shadowBlur = 24;
+    ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(100,0,150,0.08)'; ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ─── Soul Burst (Душехват — заряженный выстрел) ───────────────────────────────
+class SoulBurst {
+  constructor(x, y, range, dmg, legendary, allEnemies) {
+    this.x = x; this.y = y;
+    this.range = range; this.damage = dmg;
+    this.legendary = legendary;
+    this._enemies = allEnemies;
+    this.dead = false; this.life = 22; this._done = false;
+  }
+
+  update(enemies) {
+    this.life--;
+    if (this.life <= 0) this.dead = true;
+    if (!this._done) {
+      this._done = true;
+      const hits = [];
+      this._enemies.forEach(e => {
+        if (!e.dead && !e.reached) {
+          const dx = e.x - this.x, dy = e.y - this.y;
+          if (this.legendary || Math.sqrt(dx*dx+dy*dy) <= this.range) {
+            e.takeDamage(this.damage);
+            hits.push(e);
+          }
+        }
+      });
+      return hits;
+    }
+    return [];
+  }
+
+  draw(ctx) {
+    const progress = 1 - this.life / 22;
+    const r = this.legendary ? 400 * progress : this.range * progress;
+    const a = (1 - progress) * 0.7;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowColor = '#3399ff'; ctx.shadowBlur = 28;
+    ctx.strokeStyle = '#55bbff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = `rgba(51,153,255,${a * 0.12})`; ctx.fill();
+    // Soul particles
+    for (let i = 0; i < 6; i++) {
+      const ang = i * Math.PI / 3 + progress * Math.PI * 4;
+      const pr = r * 0.8;
+      ctx.fillStyle = `rgba(100,200,255,${a})`;
+      ctx.beginPath(); ctx.arc(this.x + Math.cos(ang)*pr, this.y + Math.sin(ang)*pr, 4, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
 // ─── Standard bullet ─────────────────────────────────────────────────────────
 class Bullet {
   constructor(x, y, target, def, towerType, splashRadius) {
@@ -1015,6 +1460,9 @@ class Bullet {
     this.curseDuration  = def.curseDuration  || 8;
     this.curseLegendary = def.curseLegendary || false;
     this.fireLegendary  = def.fireLegendary  || false;
+    // Map 3 bullet fields
+    this.shadowBladeArmorReduce = false;
+    this.soulTrapTower = null;
     this.dead     = false;
     this.hitX = 0; this.hitY = 0;
     this.annihilator = def.annihilator || false;
@@ -1035,6 +1483,9 @@ class Bullet {
       e.applyPoison(dps, this.poisonDuration);
     }
     if (this.isCurse) e.applyCurse(this.curseFactor, this.curseDuration);
+    if (this.shadowBladeArmorReduce) {
+      e.applyArmorDebuff(Math.max(0.1, (e.armorDebuffFactor || 1) - 0.1), 4);
+    }
     // blockBonus combo: заблокированные враги получают x2 от этой башни
     // (actual ×2 applied in takeDamage via enemy.blockedFactor when set by tombguard legendary)
   }
@@ -1277,6 +1728,38 @@ class Tower {
     this.game        = game;
     // Maze map specials
     this.mazeTowerDebuffTimer = 0; // void_mage: -40% damage for N seconds
+    // Map 3 tower fields
+    this.isBoneCannon      = def.isBoneCannon      || false;
+    this.boneSplashRadius  = 0;
+    this.isCurseTower      = def.isCurseTower      || false;
+    this.curseArmorFactor  = def.curseArmorFactor  || 1;
+    this.curseTowerSlowFactor = def.curseTowerSlowFactor || 0.8;
+    this.curseTowerAddCurse= false;
+    this.curseTowerDmgFactor = 1.4;
+    this.isShadowBlade     = def.isShadowBlade     || false;
+    this.shadowBladeTargets= def.shadowBladeTargets|| 3;
+    this.shadowBladeArmorReduce = false;
+    this.isParalyzeTower   = def.isParalyzeTower   || false;
+    this.paralyzeDuration  = def.paralyzeDuration  || 3;
+    this.isSoulTrap        = def.isSoulTrap        || false;
+    this.soulCount         = 0;
+    this.soulPowerReady    = false;
+    this.soulGoldBonus     = def.soulGoldBonus     || 3;
+    this.soulPowerMult     = 0;
+    this.soulPowerRangeMult= 1;
+    this.isObsidian        = def.isObsidian        || false;
+    this.obsidianFreezeDuration = def.obsidianFreezeDuration || 3;
+    this.obsidianDmg       = def.obsidianDmg       || 0;
+    this.obsidianFrozenDmgMult = def.obsidianFrozenDmgMult || 1;
+    this.obsidianBurn      = false;
+    this.isVoidRift        = def.isVoidRift        || false;
+    this.voidRiftDmgPct    = def.voidRiftDmgPct    || 0.04;
+    this.voidRiftSlowAll   = def.voidRiftSlowAll   || false;
+    this.voidRiftSlowFactor= 0.5;
+    this.voidRiftLegendarySlowTimer = 0;
+    this.isDarkVortex      = def.isDarkVortex      || false;
+    this.darkVortexSlowFactor = def.darkVortexSlowFactor || 0.4;
+    this.darkVortexDpsPct  = def.darkVortexDpsPct  || 0;
   }
 
   // Choose upgrade path (A or B). Returns false if already chosen.
@@ -1361,6 +1844,11 @@ class Tower {
     // obelisk: curseLegendary handled via getDef + game.js
     // snakecharmer: poisonExplode = this.legendary passed into Snake
     // sunmirror: burn beam handled in update (checks this.legendary)
+    // Map 3 legendary activations
+    if (this.type === 'bone_cannon')    this.shotCount = 0;
+    if (this.type === 'fear_gate')      this.paralyzeDuration = Math.max(this.paralyzeDuration, 5);
+    if (this.type === 'shadow_blade')   { this.shadowBladeTargets = Math.max(this.shadowBladeTargets, 5); this.shadowBladeArmorReduce = true; }
+    if (this.type === 'dark_vortex')    this.darkVortexDpsPct = Math.max(this.darkVortexDpsPct, 0.02);
     return true;
   }
 
@@ -1414,6 +1902,22 @@ class Tower {
         const frozen = [];
         enemies.forEach(e => { if (!e.dead && !e.reached) { e.applySlow(0, 3); frozen.push(e); } });
         return { type: 'timefreeze', x: this.x, y: this.y, hits: frozen };
+      }
+    }
+
+    // Map 3: bone_cannon legendary — every 4th shot, bone rain
+    if (this.type === 'bone_cannon') {
+      if (this.shotCount > 0 && this.shotCount % 4 === 0) {
+        this.shotCount++;  // prevent re-trigger next frame
+        const pt  = pathPoints[Math.floor(Math.random() * pathPoints.length)];
+        const rad = 80;
+        const hits = [];
+        enemies.forEach(e => {
+          if (e.dead || e.reached) return;
+          const dx = e.x - pt.x, dy = e.y - pt.y;
+          if (Math.sqrt(dx*dx + dy*dy) <= rad) { e.takeDamage(200, true); hits.push(e); }
+        });
+        return { type: 'meteor', x: pt.x, y: pt.y, radius: rad, hits };
       }
     }
 
@@ -1523,6 +2027,73 @@ class Tower {
       return new BeamEffect(this.x, this.y, this.angle, effRange, hits);
     }
 
+    // ── Paralyze tower (fear_gate) ───────────────────────────────────────────
+    if (this.isParalyzeTower) {
+      if (this.cooldown > 0) { this.cooldown--; return null; }
+      const effRange = Math.floor(this.range * this.comboMult.range);
+      const toParalyze = enemies.filter(e =>
+        !e.dead && !e.reached && !e.air &&
+        Math.sqrt((e.x-this.x)**2+(e.y-this.y)**2) <= effRange
+      );
+      if (toParalyze.length === 0) return null;
+      this.angle = Math.atan2(toParalyze[0].y - this.y, toParalyze[0].x - this.x);
+      this.cooldown = Math.max(60, Math.round(this.fireRate * this.comboMult.fireRate));
+      const dur = this.paralyzeDuration;
+      const dmgMult = this.legendary ? 1.5 : 1;
+      toParalyze.forEach(e => e.applyParalyze(dur, dmgMult));
+      if (this.game) this.game.spawnParticles(this.x, this.y, '#cc0000');
+      return null;
+    }
+
+    // ── Obsidian tower (beam freeze) ─────────────────────────────────────────
+    if (this.isObsidian) {
+      if (this.cooldown > 0) { this.cooldown--; return null; }
+      const effRange = Math.floor(this.range * this.comboMult.range);
+      let primary = null, bestP = -1;
+      enemies.forEach(e => {
+        if (e.dead || e.reached || e.air || e.invis) return;
+        const dx = e.x - this.x, dy = e.y - this.y;
+        if (Math.sqrt(dx*dx+dy*dy) > effRange) return;
+        if (e.pathIndex > bestP) { bestP = e.pathIndex; primary = e; }
+      });
+      if (!primary) return null;
+      this.angle = Math.atan2(primary.y - this.y, primary.x - this.x);
+      this.cooldown = Math.max(30, Math.round(this.fireRate * this.comboMult.fireRate));
+      const cosA = Math.cos(this.angle), sinA = Math.sin(this.angle);
+      const mapDmg = this.game?.mapDamageMult || 1;
+      const hits = [];
+      enemies
+        .filter(e => !e.dead && !e.reached && !e.air)
+        .forEach(e => {
+          const dx = e.x - this.x, dy = e.y - this.y;
+          const dot   = dx * cosA + dy * sinA;
+          const cross = Math.abs(dx * sinA - dy * cosA);
+          if (dot <= 0 || dot > effRange || cross > 18) return;
+          e.applyParalyze(this.obsidianFreezeDuration, this.obsidianFrozenDmgMult);
+          if (this.legendary) e.frozenByObsidianLeg = true;
+          hits.push(e);
+        });
+      return new IceBeamEffect(
+        this.x, this.y, this.angle, effRange, hits,
+        Math.round(this.obsidianDmg * this.comboMult.damage * mapDmg),
+        this.obsidianBurn
+      );
+    }
+
+    // ── Void rift (global damage pulse) ──────────────────────────────────────
+    if (this.isVoidRift) {
+      if (this.cooldown > 0) { this.cooldown--; return null; }
+      this.cooldown = Math.max(60, Math.round(this.fireRate * this.comboMult.fireRate));
+      if (this.legendary) this.voidRiftLegendarySlowTimer = 5;
+      return new VoidPulse(
+        this.x, this.y,
+        this.voidRiftDmgPct,
+        this.voidRiftSlowAll,
+        this.voidRiftSlowFactor || 0.5,
+        enemies.slice() // snapshot
+      );
+    }
+
     if (this.cooldown > 0) { this.cooldown--; return null; }
 
     let best = null, bestProgress = -1;
@@ -1549,7 +2120,13 @@ class Tower {
     this.cooldown = Math.max(5, Math.round(this.fireRate * this.comboMult.fireRate));
 
     const def = this.getDef();
-    if (this.pierce) return new PierceBullet(this.x, this.y, this.angle, def);
+    if (this.pierce) {
+      // Bone cannon legendary: count shots
+      if (this.isBoneCannon && this.legendary) {
+        this.shotCount = (this.shotCount || 0) + 1;
+      }
+      return new PierceBullet(this.x, this.y, this.angle, def);
+    }
     if (this.legendary && this.type === 'basic') {
       this.shotCount++;
       if (this.shotCount % 5 === 0) return new PierceBullet(this.x, this.y, this.angle, def);
@@ -1577,13 +2154,81 @@ class Tower {
       }
       return new FalconBullet(this.x, this.y, best, def);
     }
+    // Shadow blade: fires at N nearest enemies simultaneously
+    if (this.isShadowBlade && this.game) {
+      const n = this.shadowBladeTargets;
+      const targets = enemies
+        .filter(e => !e.dead && !e.reached && !e.air && !e.invis)
+        .sort((a, b) => {
+          const da = (a.x-this.x)**2+(a.y-this.y)**2;
+          const db = (b.x-this.x)**2+(b.y-this.y)**2;
+          return da - db;
+        })
+        .slice(0, n);
+      if (targets.length === 0) return null;
+      targets.forEach((t, i) => {
+        const b2 = new Bullet(this.x, this.y, t, def, this.type, 0);
+        if (this.shadowBladeArmorReduce) b2.shadowBladeArmorReduce = true;
+        if (i === 0) { /* returned below */ } else this.game.bullets.push(b2);
+      });
+      const b0 = new Bullet(this.x, this.y, targets[0], def, this.type, 0);
+      if (this.shadowBladeArmorReduce) b0.shadowBladeArmorReduce = true;
+      return b0;
+    }
+    // Soul trap: power shot or normal bullet with soul tracking
+    if (this.isSoulTrap) {
+      if (this.soulPowerReady) {
+        this.soulPowerReady = false;
+        const powerDmg = Math.round(def.damage * (3 + this.soulPowerMult));
+        const powerRange = Math.floor(this.range * this.comboMult.range * (this.soulPowerRangeMult || 1));
+        return new SoulBurst(this.x, this.y, powerRange, powerDmg, this.legendary, enemies.slice());
+      }
+      const b = new Bullet(this.x, this.y, best, def, this.type, 0);
+      b.soulTrapTower = this;
+      return b;
+    }
     return new Bullet(this.x, this.y, best, def, this.type, this.splashRadius);
   }
 
   updateAura(dt, enemies) {
+    // Void rift legendary: dark zone slow after pulse (always active when timer > 0)
+    if (this.isVoidRift && this.voidRiftLegendarySlowTimer > 0) {
+      this.voidRiftLegendarySlowTimer -= dt;
+      enemies.forEach(e => { if (!e.dead && !e.reached) e.applySlow(0.6, 0.12); });
+    }
+
     if (!this.isAura) return;
     if (this.maxHP !== null && this.hp <= 0) return;
     const effRange = Math.floor(this.range * this.comboMult.range * (this.game?.sandstormWavesLeft > 0 ? 0.7 : 1));
+
+    // ── Curse tower aura ──────────────────────────────────────────────────────
+    if (this.isCurseTower) {
+      const dur = this.legendary ? 6.0 : 0.12;
+      enemies.forEach(e => {
+        if (e.dead || e.reached) return;
+        const dx = e.x - this.x, dy = e.y - this.y;
+        if (Math.sqrt(dx*dx + dy*dy) <= effRange) {
+          e.applyArmorDebuff(this.curseArmorFactor, dur);
+          e.applySlow(this.curseTowerSlowFactor, dur);
+          if (this.curseTowerAddCurse) e.applyCurse(this.curseTowerDmgFactor, dur);
+        }
+      });
+      return;
+    }
+
+    // ── Dark vortex aura ──────────────────────────────────────────────────────
+    if (this.isDarkVortex) {
+      const mapDmg = this.game?.mapDamageMult || 1;
+      enemies.forEach(e => {
+        if (e.dead || e.reached) return;
+        const dx = e.x - this.x, dy = e.y - this.y;
+        if (Math.sqrt(dx*dx + dy*dy) <= effRange) {
+          e.applySlow(this.darkVortexSlowFactor, 0.12);
+          if (this.darkVortexDpsPct > 0) e.takeDamage(e.maxHP * this.darkVortexDpsPct * mapDmg * dt);
+        }
+      });
+      return;
+    }
 
     if (this.isSandstorm) {
       // Аура пустынного вихря: замедление + % от maxHP/сек
@@ -1762,6 +2407,15 @@ function drawTower(ctx, type, cx, cy, level, angle) {
     case 'snakecharmer': _drawSnakeCharmer(ctx, level);        break;
     case 'falconer':     _drawFalconer(ctx, level, angle);     break;
     case 'sunmirror':    _drawSunMirror(ctx, level, angle);    break;
+    // Map 3
+    case 'bone_cannon':    _drawBoneCannon(ctx, level, angle);    break;
+    case 'curse_tower':    _drawCurseTower(ctx, level);           break;
+    case 'shadow_blade':   _drawShadowBlade(ctx, level, angle);   break;
+    case 'fear_gate':      _drawFearGate(ctx, level);             break;
+    case 'soul_trap':      _drawSoulTrap(ctx, level, angle);      break;
+    case 'obsidian_tower': _drawObsidian(ctx, level);             break;
+    case 'void_rift':      _drawVoidRift(ctx, level);             break;
+    case 'dark_vortex':    _drawDarkVortex(ctx, level);           break;
   }
   ctx.shadowBlur = 0;
   ctx.restore();
@@ -2314,3 +2968,204 @@ function _drawFalconer(ctx, level, angle) {
   }
   ctx.restore();
 }
+
+// ──────────── MAP 3 DRAW FUNCTIONS ────────────
+
+function _drawBoneCannon(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const base = level>=3?'#6b6b6b':level>=2?'#555':'#444';
+  R(-9,-9,18,18,base);
+  R(-7,-7,14,14,level>=2?'#4a4a4a':'#333');
+  C(0,-1,5,level>=3?'#e0d0c0':'#c8b8a0');
+  ctx.fillStyle='#222';
+  ctx.beginPath();ctx.ellipse(-2,-2,1.5,2,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(2,-2,1.5,2,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#222';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(-2,2);ctx.lineTo(-1,3);ctx.lineTo(0,2);ctx.lineTo(1,3);ctx.lineTo(2,2);ctx.stroke();
+  ctx.save();ctx.rotate(angle);
+  const bColor = level>=3?'#d0c0b0':'#a89880';
+  R(4,-3,14,6,bColor);
+  ctx.fillStyle=level>=2?'#c0b0a0':'#907060';
+  for(let i=0;i<3;i++){ctx.fillRect(5+i*4,-4,3,8);}
+  ctx.fillStyle='#e0d0c0';
+  ctx.beginPath();ctx.moveTo(18,-3);ctx.lineTo(22,0);ctx.lineTo(18,3);ctx.fill();
+  if(level>=3){ctx.shadowColor='#c8b8a0';ctx.shadowBlur=8;}
+  ctx.restore();
+}
+
+function _drawCurseTower(ctx, level) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.002;
+  R(-9,-9,18,18,level>=3?'#1a0030':'#110022');
+  ctx.strokeStyle=level>=3?'#cc44ff':level>=2?'#9922cc':'#661199';
+  ctx.lineWidth=2;ctx.strokeRect(-9,-9,18,18);
+  ctx.font='bold 6px serif';
+  ctx.fillStyle=level>=3?'#ff66ff':level>=2?'#cc44ff':'#9922cc';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  const runes=['ψ','Ω','φ','Σ'];
+  const positions=[[-6,-5],[6,-5],[-6,4],[6,4]];
+  if(level>=2){ctx.shadowColor='#cc44ff';ctx.shadowBlur=6;}
+  positions.forEach((p,i)=>ctx.fillText(runes[i],p[0],p[1]));
+  ctx.shadowBlur=0;
+  const pulse=0.7+Math.sin(now*3)*0.3;
+  C(0,-1,4*pulse,level>=3?'#ff44ff':level>=2?'#bb22ee':'#880088');
+  C(0,-1,2*pulse,'rgba(255,100,255,0.6)');
+  for(let i=0;i<3;i++){
+    const a=now*2+i*Math.PI*2/3;
+    const r=level>=2?8:7;
+    C(Math.cos(a)*r,Math.sin(a)*r,1.5,level>=3?'#ff88ff':'#cc44ff');
+  }
+}
+
+function _drawShadowBlade(ctx, level, angle) {
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.003;
+  C(0,0,9,level>=3?'#1a001a':'#110011');
+  ctx.strokeStyle=level>=3?'#9900cc':level>=2?'#660099':'#440066';
+  ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
+  const bladeAngle=now*1.5+angle;
+  const bladeLen=level>=3?14:12;
+  for(let i=0;i<3;i++){
+    const a=bladeAngle+i*Math.PI*2/3;
+    ctx.save();ctx.rotate(a);
+    ctx.fillStyle=level>=3?'#cc00cc':level>=2?'#990099':'#660066';
+    ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(bladeLen,-2);ctx.lineTo(bladeLen+4,0);ctx.lineTo(bladeLen,2);ctx.fill();
+    if(level>=2){ctx.shadowColor='#cc44ff';ctx.shadowBlur=8;}
+    C(bladeLen+2,0,2,level>=3?'#ff88ff':'#cc44ff');
+    ctx.shadowBlur=0;
+    ctx.restore();
+  }
+  C(0,0,3.5,level>=3?'#440044':'#330033');
+  C(0,0,1.5,'#cc00ff');
+}
+
+function _drawFearGate(ctx, level) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.002;
+  const stone=level>=3?'#3a3040':'#2a2030';
+  R(-10,-10,5,20,stone);
+  R(5,-10,5,20,stone);
+  R(-10,-10,20,5,stone);
+  const portalAlpha=0.6+Math.sin(now*2)*0.2;
+  ctx.fillStyle=level>=3?`rgba(220,0,0,${portalAlpha})`:`rgba(160,0,0,${portalAlpha})`;
+  ctx.beginPath();ctx.arc(0,-5,6,Math.PI,0);ctx.lineTo(6,5);ctx.lineTo(-6,5);ctx.closePath();ctx.fill();
+  ctx.fillStyle=`rgba(255,80,80,${portalAlpha*0.5})`;
+  ctx.beginPath();ctx.arc(0,-3,3,0,Math.PI*2);ctx.fill();
+  if(level>=2){ctx.shadowColor='#ff0000';ctx.shadowBlur=8;}
+  C(-7.5,-12,3,level>=3?'#d0c0b0':'#a08070');
+  C(7.5,-12,3,level>=3?'#d0c0b0':'#a08070');
+  ctx.fillStyle='#222';
+  ctx.beginPath();ctx.ellipse(-8.5,-13,0.8,1,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(-6.5,-13,0.8,1,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(6.5,-13,0.8,1,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(8.5,-13,0.8,1,0,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+}
+
+function _drawSoulTrap(ctx, level, angle) {
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.002;
+  R(-7,2,14,8,level>=3?'#1a1a2a':'#111120');
+  ctx.strokeStyle=level>=3?'#4444aa':level>=2?'#333388':'#222266';
+  ctx.lineWidth=1.5;ctx.strokeRect(-7,2,14,8);
+  R(-3,-10,6,14,level>=3?'#222244':'#1a1a33');
+  ctx.fillStyle=level>=3?'#4444aa':'#333388';
+  ctx.beginPath();ctx.moveTo(-3,-10);ctx.lineTo(0,-16);ctx.lineTo(3,-10);ctx.fill();
+  const orbitR=level>=2?9:8;
+  for(let i=0;i<3;i++){
+    const a=now*1.8+i*Math.PI*2/3+angle*0.1;
+    const px=Math.cos(a)*orbitR, py=Math.sin(a)*orbitR-2;
+    if(level>=3){ctx.shadowColor='#4488ff';ctx.shadowBlur=10;}
+    C(px,py,2.5,level>=3?'#88bbff':'#4477dd');
+    C(px,py,1,'#ccddff');
+    ctx.shadowBlur=0;
+  }
+  const pulse=0.8+Math.sin(now*4)*0.2;
+  C(0,-16,2*pulse,level>=3?'#6688ff':'#4466cc');
+}
+
+function _drawObsidian(ctx, level) {
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.002;
+  ctx.fillStyle=level>=3?'#050510':'#030308';
+  ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(8,-6);ctx.lineTo(8,6);ctx.lineTo(0,11);ctx.lineTo(-8,6);ctx.lineTo(-8,-6);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=level>=3?'#0066aa':level>=2?'#004488':'#002255';
+  ctx.lineWidth=1.5;ctx.stroke();
+  const crystals=[[-6,-4],[-5,-8],[5,-8],[6,-4],[0,-9]];
+  crystals.forEach(([cx,cy])=>{
+    ctx.fillStyle=level>=3?'#0088cc':level>=2?'#005588':'#003366';
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx-2,cy+4);ctx.lineTo(cx+2,cy+4);ctx.closePath();ctx.fill();
+  });
+  const pulse=0.7+Math.sin(now*3)*0.3;
+  if(level>=2){ctx.shadowColor='#0099ff';ctx.shadowBlur=12*pulse;}
+  C(0,-1,4*pulse,level>=3?'#0077cc':level>=2?'#005599':'#003377');
+  C(0,-1,2*pulse,'rgba(100,200,255,0.7)');
+  ctx.shadowBlur=0;
+  ctx.fillStyle=level>=3?'#003355':'#002244';
+  ctx.fillRect(-10,-10,3,3);ctx.fillRect(7,-10,3,3);
+}
+
+function _drawVoidRift(ctx, level) {
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.002;
+  const wobble=Math.sin(now*2)*1.5;
+  ctx.fillStyle=level>=3?'#0d0010':'#080008';
+  ctx.beginPath();ctx.ellipse(0,wobble,10,7,0,0,Math.PI*2);ctx.fill();
+  for(let i=0;i<3;i++){
+    const r=6+i*4;
+    const alpha=0.6-i*0.15;
+    ctx.strokeStyle=level>=3?`rgba(150,0,255,${alpha})`:`rgba(100,0,200,${alpha})`;
+    ctx.lineWidth=1.5-i*0.3;
+    ctx.beginPath();ctx.ellipse(0,wobble,r,r*0.6,0,0,Math.PI*2);ctx.stroke();
+  }
+  for(let i=0;i<5;i++){
+    const a=now*2+i*Math.PI*2/5;
+    const r=8+Math.sin(now+i)*2;
+    C(Math.cos(a)*r,Math.sin(a)*r*0.6+wobble,1.5,level>=3?'#cc00ff':'#8800cc');
+  }
+  if(level>=2){ctx.shadowColor='#8800ff';ctx.shadowBlur=12;}
+  C(0,wobble,3.5,'#1a001a');
+  C(0,wobble,1.5,level>=3?'#aa00ff':'#770099');
+  ctx.shadowBlur=0;
+}
+
+function _drawDarkVortex(ctx, level) {
+  const C=(x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
+  const now=Date.now()*0.002;
+  C(0,0,10,level>=3?'#080010':'#050008');
+  ctx.strokeStyle=level>=3?'#660099':level>=2?'#440066':'#330044';
+  ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.stroke();
+  const spinAngle=now*2;
+  for(let arm=0;arm<3;arm++){
+    const baseA=spinAngle+arm*Math.PI*2/3;
+    ctx.strokeStyle=level>=3?'rgba(150,0,255,0.8)':level>=2?'rgba(100,0,200,0.7)':'rgba(80,0,150,0.6)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let t=0;t<=1;t+=0.1){
+      const r=3+t*8;const a=baseA+t*Math.PI;
+      const x=Math.cos(a)*r,y=Math.sin(a)*r;
+      t===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  if(level>=2){
+    ctx.strokeStyle=level>=3?'rgba(200,100,255,0.7)':'rgba(150,50,200,0.5)';
+    ctx.lineWidth=1;
+    for(let i=0;i<2;i++){
+      const a=spinAngle*1.5+i*Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a)*5,Math.sin(a)*5);
+      ctx.lineTo(Math.cos(a+0.4)*9,Math.sin(a+0.4)*9);
+      ctx.stroke();
+    }
+  }
+  if(level>=3){ctx.shadowColor='#9900ff';ctx.shadowBlur=10;}
+  C(0,0,4,level>=3?'#1a0030':'#110020');
+  C(0,0,2,level>=3?'#8800ff':'#550099');
+  ctx.shadowBlur=0;
+}
+

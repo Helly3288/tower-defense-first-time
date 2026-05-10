@@ -1006,6 +1006,36 @@ class Game {
             this.spawnParticles(e.x, e.y, '#8dde26');
           }
         }
+        // Душехват: бонусное золото за убийство + счётчик душ
+        if (b.soulTrapTower && e.dead) {
+          const st = b.soulTrapTower;
+          this.gold += st.soulGoldBonus || 3;
+          st.soulCount = (st.soulCount || 0) + 1;
+          if (st.soulCount >= 5) {
+            st.soulCount = 0;
+            st.soulPowerReady = true;
+          }
+        }
+        // Обсидиан легендарный: замороженный враг взрывается при следующем попадании
+        if (e.frozenByObsidianLeg && !e.dead) {
+          e.frozenByObsidianLeg = false;
+          const ex = e.x, ey = e.y;
+          this.enemies.forEach(near => {
+            if (near === e || near.dead || near.reached) return;
+            const dx = near.x - ex, dy = near.y - ey;
+            if (Math.sqrt(dx*dx + dy*dy) <= 60) {
+              near.takeDamage(150, true);
+              if (near.dead) {
+                this.gold  += this._enemyGold(near);
+                this.score += near.reward * 2;
+                this.spawnParticles(near.x, near.y, '#00ccff');
+                this.deathStains.push({ x: near.x, y: near.y, r: near.size * 2, life: 180, maxLife: 180 });
+                this.achievements.onEnemyKilled(near);
+              }
+            }
+          });
+          this.spawnParticles(ex, ey, '#00ccff');
+        }
       });
       // Аннигилятор: создать зону излучения на месте попадания
       if (b._zonePos) {

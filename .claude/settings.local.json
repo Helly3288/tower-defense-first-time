@@ -7,7 +7,10 @@
       "Bash(node --check js/game.js)",
       "Bash(node --check js/towers.js)",
       "Bash(node -e ' *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git config *)",
+      "Bash(git push *)"
     ]
   }
 }
