@@ -1275,6 +1275,8 @@ class Tower {
     this.selected    = false;
     this.angle       = 0;
     this.game        = game;
+    // Maze map specials
+    this.mazeTowerDebuffTimer = 0; // void_mage: -40% damage for N seconds
   }
 
   // Choose upgrade path (A or B). Returns false if already chosen.

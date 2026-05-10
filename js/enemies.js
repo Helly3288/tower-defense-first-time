@@ -50,6 +50,22 @@ const ENEMY_DEFS = {
   dark_mage:        { name:'Тёмный маг',           baseHP:100, speed:1.0, reward:35, startWave:11, size:10, mapOnly:'gorge', teleportInterval:10 },
   tomb_guardian:    { name:'Хранитель гробниц',    baseHP:130, speed:1.1, reward:38, startWave:12, size:11, mapOnly:'gorge', armor:0.30, startInvis:5.0 },
   desert_dragon:    { name:'Пустынный дракон',     baseHP:500, speed:1.2, reward:55, startWave:13, size:16, mapOnly:'gorge', armor:0.30, regenPct:2.0, air:true },
+  // ── Maze-only enemies (Тёмное царство) ──────────────────────────────────────
+  skel_warrior:    { name:'Скелет-воин',       baseHP:80,  speed:1.2, reward:9,  startWave:1,  size:10, mapOnly:'maze', revive:true },
+  ghost:           { name:'Призрак',            baseHP:60,  speed:1.5, reward:10, startWave:2,  size:9,  mapOnly:'maze', ghostDamageReduction:0.5 },
+  banshee:         { name:'Баньши',             baseHP:90,  speed:1.0, reward:11, startWave:3,  size:10, mapOnly:'maze', bansheeSlowChance:0.3 },
+  dark_knight:     { name:'Тёмный рыцарь',     baseHP:200, speed:0.8, reward:14, startWave:5,  size:13, mapOnly:'maze', armor:0.35, shieldBlock:true },
+  necro_lord:      { name:'Некромант-лорд',    baseHP:150, speed:0.9, reward:15, startWave:6,  size:11, mapOnly:'maze' },
+  lich:            { name:'Личь',               baseHP:250, speed:0.85,reward:18, startWave:8,  size:12, mapOnly:'maze', armor:0.20, teleportInterval:8, teleportCells:4 },
+  bone_golem:      { name:'Костяной голем',    baseHP:400, speed:0.5, reward:22, startWave:9,  size:17, mapOnly:'maze', armor:0.45, spawnOnDeath:'skel_warrior' },
+  fire_demon:      { name:'Демон-поджигатель', baseHP:180, speed:1.1, reward:20, startWave:10, size:11, mapOnly:'maze', deathExplosion:{ damage:30, radius:72 } },
+  shadow_assassin: { name:'Теневой ассасин',   baseHP:120, speed:2.0, reward:17, startWave:11, size:9,  mapOnly:'maze' },
+  void_mage:       { name:'Маг Пустоты',       baseHP:220, speed:0.9, reward:25, startWave:12, size:11, mapOnly:'maze' },
+  portal_guardian: { name:'Страж портала',     baseHP:500, speed:0.6, reward:35, startWave:14, size:15, mapOnly:'maze', armor:0.40, regenPct:2.0, speedAura:{ mult:1.15, radius:72 } },
+  bone_dragon:     { name:'Костяной дракон',   baseHP:350, speed:1.3, reward:40, startWave:15, size:15, mapOnly:'maze', armor:0.35, air:true },
+  soul_devourer:   { name:'Душепожиратель',    baseHP:300, speed:0.95,reward:38, startWave:17, size:13, mapOnly:'maze' },
+  shadow_lord:     { name:'Повелитель теней',  baseHP:600, speed:0.7, reward:50, startWave:19, size:16, mapOnly:'maze', armor:0.30, regenPct:1.5 },
+  archdemon:       { name:'Архидемон',         baseHP:800, speed:0.65,reward:65, startWave:22, size:17, mapOnly:'maze', armor:0.50, regenPct:2.0 },
 };
 
 // HP scaling: +25% every 2 waves (карты 1 и 3)
@@ -1147,6 +1163,451 @@ function drawEnemySprite(ctx, type, size, tick, enemy) {
       ctx.beginPath(); ctx.arc(18,-3,2,0,Math.PI*2); ctx.fill();
       break;
     }
+
+    // ── Maze enemies ─────────────────────────────────────────────────────────
+
+    case 'skel_warrior': {
+      // White skeleton with shield and sword, glowing green eyes
+      const sw = Math.sin(t * 1.4) * 1;
+      R(-3,-2,7,9,'#d8d8d0');          // ribcage/torso
+      R(-2,-10,6,8,'#c8c8c0');         // skull head
+      R(-3,-12,8,3,'#a0a098');         // top of skull
+      ctx.fillStyle='#1a1a1a'; ctx.fillRect(-1,-9,2,4); // nose cavity
+      ctx.save(); ctx.shadowColor='#00ff44'; ctx.shadowBlur=8;
+      ctx.fillStyle='#00dd33';
+      ctx.beginPath(); ctx.arc(-1,-7,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3,-7,2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      R(-3,7,2,4+sw,'#c0c0b8');        // left leg
+      R(2,7,2,4-sw,'#c0c0b8');         // right leg
+      R(-9,-4,4,8,'#8899bb');          // bone shield
+      R(-10,-4,4,2,'#99aacc');
+      ctx.strokeStyle='#c0c0b8'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(8,-10); ctx.lineTo(8,8); ctx.stroke(); // sword
+      ctx.fillStyle='#b0b0a0';
+      ctx.beginPath(); ctx.moveTo(6,-10); ctx.lineTo(8,-15); ctx.lineTo(10,-10); ctx.closePath(); ctx.fill();
+      break;
+    }
+
+    case 'ghost': {
+      // Translucent blue-white wispy spirit
+      const gw = Math.sin(t * 0.8) * 2;
+      ctx.save(); ctx.globalAlpha = 0.70;
+      ctx.fillStyle='#c8d8f8';
+      ctx.beginPath();
+      ctx.moveTo(-7,8); ctx.quadraticCurveTo(-9+gw,2,-7,-4);
+      ctx.quadraticCurveTo(-4,-12,0,-13); ctx.quadraticCurveTo(4,-12,7,-4);
+      ctx.quadraticCurveTo(9-gw,2,7,8);
+      ctx.quadraticCurveTo(4,12,0,10); ctx.quadraticCurveTo(-4,12,-7,8);
+      ctx.fill();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle='#1a2066';
+      ctx.beginPath(); ctx.arc(-2,-5,2.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3,-5,2.5,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle='#a0b8f0';
+      for (let i=0;i<3;i++) {
+        const ta = t*0.5+i*Math.PI*2/3;
+        ctx.beginPath(); ctx.arc(Math.cos(ta)*10,Math.sin(ta)*6+2,2,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+      break;
+    }
+
+    case 'banshee': {
+      // Pale green-white wailing spirit with flowing form
+      const bw = Math.sin(t * 1.1) * 2;
+      ctx.save(); ctx.globalAlpha = 0.85;
+      ctx.fillStyle='#d0ffe0';
+      ctx.beginPath();
+      ctx.moveTo(0,-13); ctx.bezierCurveTo(-8,-8,-9+bw,0,-8,8);
+      ctx.quadraticCurveTo(-4,14,0,12); ctx.quadraticCurveTo(4,14,8,8);
+      ctx.bezierCurveTo(9-bw,0,8,-8,0,-13); ctx.fill();
+      // wailing mouth
+      ctx.fillStyle='#001a00';
+      ctx.beginPath(); ctx.ellipse(0,2,4,6,0,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle='#004400';
+      ctx.beginPath(); ctx.arc(-3,-4,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3,-4,2,0,Math.PI*2); ctx.fill();
+      // Shriek aura
+      ctx.globalAlpha = 0.2 + Math.abs(Math.sin(t*1.5))*0.2;
+      ctx.strokeStyle='#88ffaa'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(0,0,13+bw,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+      break;
+    }
+
+    case 'dark_knight': {
+      // Black armored knight with purple glow, shield blocks first hit
+      R(-5,-3,12,12,'#1a1a2e');        // black armor body
+      R(-6,-11,14,9,'#12122a');        // black helmet
+      R(-4,-9,9,4,'#6c3483');          // purple visor
+      ctx.save(); ctx.shadowColor='#8e44ad'; ctx.shadowBlur=10;
+      ctx.fillStyle='rgba(142,68,173,0.8)';
+      ctx.beginPath(); ctx.ellipse(0,-7,3,1.5,0,0,Math.PI*2); ctx.fill(); // visor glow
+      ctx.restore();
+      R(-8,-1,4,9,'#0d0d1a');          // left pauldron
+      R(6,-1,4,9,'#0d0d1a');
+      R(-3,9,3,5,'#12122a');           // legs
+      R(2,9,3,5,'#12122a');
+      R(-12,-7,5,15,'#2c1440');        // dark shield
+      R(-12,-7,5,3,'#6c3483');         // shield gem row
+      ctx.strokeStyle='#4a235a'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(8,-12); ctx.lineTo(8,6); ctx.stroke();
+      ctx.fillStyle='#2c2c4a';
+      ctx.beginPath(); ctx.moveTo(6,-12); ctx.lineTo(8,-18); ctx.lineTo(10,-12); ctx.closePath(); ctx.fill();
+      if (enemy && enemy.mazeShieldActive) {
+        ctx.save(); ctx.globalAlpha=0.35; ctx.shadowColor='#8e44ad'; ctx.shadowBlur=20;
+        ctx.fillStyle='#8e44ad';
+        ctx.beginPath(); ctx.arc(0,0,size+3,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'necro_lord': {
+      // Dark purple robed necromancer with skull staff
+      ctx.fillStyle='#2c1054';
+      ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(-7,9); ctx.lineTo(7,9); ctx.closePath(); ctx.fill();
+      C(0,-8,4,'#c0a0d0');             // pale face
+      R(-1,-13,2,3,'#4a0a6a');
+      ctx.fillStyle='#1a0040';
+      ctx.beginPath(); ctx.moveTo(-5,-10); ctx.lineTo(-9,-6); ctx.lineTo(9,-6); ctx.lineTo(5,-10); ctx.closePath(); ctx.fill();
+      // Skull staff
+      R(10,-14,2,22,'#3a0060');
+      C(11,-15,5,'#d0c0e0');           // skull orb
+      ctx.fillStyle='#1a0040';
+      ctx.beginPath(); ctx.arc(10,-16,2,0,Math.PI*2); ctx.fill(); // skull eyes
+      ctx.beginPath(); ctx.arc(12,-16,2,0,Math.PI*2); ctx.fill();
+      ctx.save(); ctx.shadowColor='#8800cc'; ctx.shadowBlur=12;
+      ctx.fillStyle='rgba(136,0,204,0.7)';
+      ctx.beginPath(); ctx.arc(11,-15,7,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Floating runes
+      const nr = t * 0.7;
+      for (let i=0;i<3;i++) {
+        const a=nr+i*Math.PI*2/3;
+        ctx.save(); ctx.globalAlpha=0.5+Math.sin(a)*0.3;
+        ctx.fillStyle='#bb44ff';
+        ctx.beginPath(); ctx.arc(Math.cos(a)*9, Math.sin(a)*6, 2, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'lich': {
+      // Dark floating lich with bone crown and staff
+      const lf = Math.sin(t * 0.9) * 2; // float
+      ctx.save(); ctx.translate(0, lf);
+      // Ghostly robe
+      ctx.fillStyle='#1a0830';
+      ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(-8,10); ctx.lineTo(8,10); ctx.closePath(); ctx.fill();
+      // Skull face
+      C(0,-8,5,'#e0e0d0');
+      ctx.fillStyle='#5500bb';
+      ctx.beginPath(); ctx.arc(-2,-9,2.5,0,Math.PI*2); ctx.fill(); // left eye socket
+      ctx.beginPath(); ctx.arc(2,-9,2.5,0,Math.PI*2); ctx.fill();  // right eye socket
+      ctx.save(); ctx.shadowColor='#aa00ff'; ctx.shadowBlur=12;
+      ctx.fillStyle='rgba(170,0,255,0.9)';
+      ctx.beginPath(); ctx.arc(-2,-9,1.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2,-9,1.2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Bone crown
+      ctx.fillStyle='#c8c8b8';
+      for (let i=0;i<5;i++) { const cx=-8+i*4; ctx.fillRect(cx,-14,2,4+i%2*3); }
+      // Dark staff
+      R(-12,-16,2,24,'#220044');
+      ctx.save(); ctx.shadowColor='#6600cc'; ctx.shadowBlur=16;
+      ctx.fillStyle='rgba(100,0,200,0.8)';
+      ctx.beginPath(); ctx.arc(-11,-17,6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#cc88ff';
+      ctx.beginPath(); ctx.arc(-11,-17,2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Teleport shimmer
+      ctx.globalAlpha=0.15+Math.abs(Math.sin(t*0.5))*0.2;
+      ctx.fillStyle='#9900ff';
+      ctx.beginPath(); ctx.arc(0,0,size+2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      break;
+    }
+
+    case 'bone_golem': {
+      // Huge bone construct with purple eyes
+      R(-14,-13,28,24,'#c8c0b0');      // main body
+      R(-14,-13,14,12,'#d8d0c0');      // upper half lighter
+      R(0,0,14,11,'#d8d0c0');
+      R(-2,-2,4,4,'#5a4030');          // joint center
+      R(-14,-2,28,3,'#9a9080');        // horizontal bone seam
+      R(-2,-13,4,26,'#9a9080');        // vertical bone seam
+      ctx.save(); ctx.shadowColor='#aa00ff'; ctx.shadowBlur=12;
+      ctx.fillStyle='#9900dd';
+      ctx.beginPath(); ctx.arc(-5,-4,4,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5,-4,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#dd88ff';
+      ctx.beginPath(); ctx.arc(-5,-4,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5,-4,2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      R(-18,-5,5,9,'#b0a898');         // arms
+      R(13,-5,5,9,'#b0a898');
+      // Bone spikes on shoulders
+      ctx.fillStyle='#c8c0b0';
+      ctx.beginPath(); ctx.moveTo(-18,-5); ctx.lineTo(-22,-11); ctx.lineTo(-15,-5); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(18,-5);  ctx.lineTo(22,-11);  ctx.lineTo(15,-5);  ctx.fill();
+      break;
+    }
+
+    case 'fire_demon': {
+      // Orange/red demon with flame hair
+      const ff = Math.sin(t * 2.0) * 3;
+      // Flame hair/crown
+      ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=14;
+      ctx.fillStyle='#ff6600';
+      for (let i=0;i<5;i++) {
+        const fx=-8+i*4, fy=-10+Math.sin(t*2+i)*3;
+        ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(fx-3,fy-8-ff*0.5); ctx.lineTo(fx+3,fy-8+ff*0.5); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+      R(-5,-2,11,11,'#cc2200');        // body
+      C(0,-6,5,'#dd4400');             // head
+      ctx.save(); ctx.shadowColor='#ffff00'; ctx.shadowBlur=8;
+      ctx.fillStyle='#ffaa00';
+      ctx.beginPath(); ctx.arc(-2,-7,2,0,Math.PI*2); ctx.fill(); // eyes
+      ctx.beginPath(); ctx.arc(2,-7,2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Wings
+      ctx.fillStyle='#880000';
+      ctx.beginPath(); ctx.moveTo(-5,-1); ctx.lineTo(-16,-9+ff); ctx.lineTo(-10,6); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(6,-1);  ctx.lineTo(17,-9-ff);  ctx.lineTo(11,6);  ctx.closePath(); ctx.fill();
+      R(-3,9,3,5,'#992200');
+      R(1,9,3,5,'#992200');
+      break;
+    }
+
+    case 'shadow_assassin': {
+      // Black swift figure with glowing red eyes and dagger
+      const sa = Math.sin(t * 2.5) * 2;
+      R(-3,-2,7,9,'#0d0d14');          // black body
+      C(0,-6,4,'#0a0a12');             // head
+      ctx.save(); ctx.shadowColor='#ff0000'; ctx.shadowBlur=12;
+      ctx.fillStyle='#ff1111';
+      ctx.beginPath(); ctx.arc(-2,-7,1.8,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2,-7,1.8,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Cloak
+      ctx.fillStyle='#050508';
+      ctx.beginPath(); ctx.moveTo(-3,-1); ctx.lineTo(-9,8+sa); ctx.lineTo(0,5); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(4,-1);  ctx.lineTo(10,8-sa);  ctx.lineTo(0,5); ctx.fill();
+      // Dagger
+      ctx.strokeStyle='#667788'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(8,-12); ctx.lineTo(4,4); ctx.stroke();
+      ctx.fillStyle='#88aacc';
+      ctx.beginPath(); ctx.moveTo(7,-12); ctx.lineTo(8,-18); ctx.lineTo(9,-12); ctx.closePath(); ctx.fill();
+      // Invis shimmer
+      if (enemy && enemy.invis) {
+        ctx.save(); ctx.globalAlpha=0.3;
+        ctx.fillStyle='#440044';
+        ctx.beginPath(); ctx.arc(0,0,size+4,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'void_mage': {
+      // Dark indigo mage with void staff and dark particles
+      const vm = t * 0.9;
+      ctx.fillStyle='#0a0020';
+      ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(-7,9); ctx.lineTo(7,9); ctx.closePath(); ctx.fill();
+      C(0,-8,4,'#7766aa');
+      R(-1,-13,2,3,'#220055');
+      ctx.fillStyle='#110033';
+      ctx.beginPath(); ctx.moveTo(-5,-10); ctx.lineTo(-8,-6); ctx.lineTo(8,-6); ctx.lineTo(5,-10); ctx.closePath(); ctx.fill();
+      // Void staff
+      R(10,-14,2,23,'#05001a');
+      ctx.save(); ctx.shadowColor='#3300aa'; ctx.shadowBlur=18;
+      ctx.fillStyle='rgba(30,0,100,0.9)';
+      ctx.beginPath(); ctx.arc(11,-15,6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#6633ff';
+      ctx.beginPath(); ctx.arc(11,-15,2.5,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Orbiting void particles
+      for (let i=0;i<4;i++) {
+        const a=vm+i*Math.PI/2;
+        ctx.save(); ctx.globalAlpha=0.6+Math.sin(a)*0.3;
+        ctx.fillStyle='#5500cc';
+        ctx.beginPath(); ctx.arc(Math.cos(a)*10,Math.sin(a)*7,2.5,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'portal_guardian': {
+      // Large dark-purple guardian with portal ring aura
+      const pg = Math.sin(t * 0.7) * 2;
+      R(-6,-3,13,13,'#2d0850');        // body
+      R(-7,-11,15,10,'#1a0535');       // helmet
+      R(-5,-9,11,5,'#110028');         // visor
+      ctx.save(); ctx.shadowColor='#aa00ff'; ctx.shadowBlur=14;
+      ctx.fillStyle='rgba(160,0,255,0.7)';
+      ctx.beginPath(); ctx.ellipse(0,-7,5,2,0,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      R(-10,-1,4,10,'#200640');        // pauldrons
+      R(7,-1,4,10,'#200640');
+      R(-4,10,3,6,'#1a0535');
+      R(2,10,3,6,'#1a0535');
+      // Portal ring aura
+      const pga = t * 0.4;
+      ctx.save(); ctx.globalAlpha=0.25+pg*0.05;
+      ctx.strokeStyle='#8800cc'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(0,0,size+4+pg,0,Math.PI*2); ctx.stroke();
+      ctx.globalAlpha=0.15;
+      ctx.beginPath(); ctx.arc(0,0,size+10+pg,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+      // Rotating rune dots
+      for (let i=0;i<6;i++) {
+        const a=pga+i*Math.PI/3;
+        ctx.save(); ctx.globalAlpha=0.7; ctx.fillStyle= i%2?'#cc44ff':'#ff2244';
+        ctx.beginPath(); ctx.arc(Math.cos(a)*(size+4),Math.sin(a)*(size+4),2,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'bone_dragon': {
+      // White/grey skeletal flying dragon
+      const bd = Math.sin(t * 0.12) * 7;
+      // Bone wings
+      ctx.fillStyle='#d0ccc0';
+      ctx.beginPath(); ctx.moveTo(-3,-1); ctx.lineTo(-19,-9+bd); ctx.lineTo(-16,7+bd); ctx.lineTo(-5,4); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(3,-1);  ctx.lineTo(19,-9-bd);  ctx.lineTo(16,7-bd);  ctx.lineTo(5,4);  ctx.fill();
+      // Wing bone ribs
+      ctx.strokeStyle='#a0a090'; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(-3,2); ctx.lineTo(-16,-4+bd); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-3,2); ctx.lineTo(-13,5+bd); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(3,2);  ctx.lineTo(16,-4-bd); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(3,2);  ctx.lineTo(13,5-bd);  ctx.stroke();
+      // Bone body
+      R(-5,-4,12,9,'#ccc8b8');
+      // Skull head
+      R(5,-8,11,8,'#d0ccc0');
+      R(13,-6,6,3,'#b0ac9c');          // bone jaw
+      ctx.save(); ctx.shadowColor='#6600cc'; ctx.shadowBlur=10;
+      ctx.fillStyle='#6600bb';
+      ctx.beginPath(); ctx.arc(8,-5,2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Spine ridges
+      ctx.fillStyle='#b0aa98';
+      for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(-5+i*2,-4);ctx.lineTo(-3+i*2,-9);ctx.lineTo(-1+i*2,-4);ctx.fill();}
+      // Bone tail
+      R(-14,1,10,4,'#c8c4b4');
+      R(-20,2,8,3,'#c0bcac');
+      ctx.fillStyle='#b8b4a4';
+      ctx.beginPath(); ctx.moveTo(-21,2); ctx.lineTo(-26,-1); ctx.lineTo(-21,6); ctx.fill();
+      break;
+    }
+
+    case 'soul_devourer': {
+      // Dark entity with tentacles and void core
+      const sd = t * 0.8;
+      C(0,0,10,'#0a0014');             // void core
+      ctx.save(); ctx.shadowColor='#5500aa'; ctx.shadowBlur=16;
+      ctx.fillStyle='rgba(80,0,150,0.7)';
+      ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#9955ff';
+      ctx.beginPath(); ctx.arc(0,0,3.5,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      // Tentacles
+      ctx.strokeStyle='#330066'; ctx.lineWidth=2.5;
+      for (let i=0;i<6;i++) {
+        const a=sd+i*Math.PI/3, br=Math.sin(sd+i)*3;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.bezierCurveTo(
+          Math.cos(a)*6+Math.cos(a+1)*br, Math.sin(a)*6+Math.sin(a+1)*br,
+          Math.cos(a)*10+Math.cos(a-1)*br,Math.sin(a)*10+Math.sin(a-1)*br,
+          Math.cos(a)*14, Math.sin(a)*14
+        );
+        ctx.stroke();
+      }
+      // Devouring glow
+      ctx.save(); ctx.globalAlpha=0.15+Math.abs(Math.sin(sd*0.5))*0.2;
+      ctx.fillStyle='#7700cc';
+      ctx.beginPath(); ctx.arc(0,0,size+2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      break;
+    }
+
+    case 'shadow_lord': {
+      // Imposing dark entity with shadow crown
+      const sl = Math.sin(t * 0.6) * 2;
+      R(-6,-3,13,13,'#050510');        // body
+      C(0,-8,6,'#08081a');             // head
+      // Shadow crown
+      ctx.fillStyle='#220033';
+      ctx.beginPath(); ctx.moveTo(-8,-13); ctx.lineTo(-6,-22+sl); ctx.lineTo(-4,-13); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-2,-14); ctx.lineTo(0,-24+sl);   ctx.lineTo(2,-14);  ctx.fill();
+      ctx.beginPath(); ctx.moveTo(4,-13);  ctx.lineTo(6,-22+sl);   ctx.lineTo(8,-13);  ctx.fill();
+      ctx.save(); ctx.shadowColor='#4400aa'; ctx.shadowBlur=18;
+      ctx.fillStyle='rgba(60,0,140,0.6)';
+      ctx.beginPath(); ctx.arc(0,-8,8,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      ctx.save(); ctx.shadowColor='#aa00ff'; ctx.shadowBlur=10;
+      ctx.fillStyle='#cc33ff';
+      ctx.beginPath(); ctx.arc(-3,-9,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3,-9,2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      R(-11,-1,4,11,'#070714');        // pauldrons
+      R(8,-1,4,11,'#070714');
+      R(-4,10,3,6,'#050510');
+      R(2,10,3,6,'#050510');
+      // Shadow aura
+      ctx.save(); ctx.globalAlpha=0.1+sl*0.03;
+      ctx.fillStyle='#440088';
+      ctx.beginPath(); ctx.arc(0,0,size+6+sl,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      break;
+    }
+
+    case 'archdemon': {
+      // Massive red/black demon with multiple horns
+      const ad = Math.sin(t * 0.7) * 2;
+      // Massive wings
+      ctx.fillStyle='#550000';
+      ctx.beginPath(); ctx.moveTo(-6,-2); ctx.lineTo(-22,-12+ad); ctx.lineTo(-18,9+ad); ctx.lineTo(-8,6); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(6,-2);  ctx.lineTo(22,-12-ad);  ctx.lineTo(18,9-ad);  ctx.lineTo(8,6);  ctx.fill();
+      ctx.fillStyle='#330000';
+      ctx.beginPath(); ctx.moveTo(-6,-2); ctx.lineTo(-18,-6+ad); ctx.lineTo(-14,4+ad); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(6,-2);  ctx.lineTo(18,-6-ad);  ctx.lineTo(14,4-ad);  ctx.fill();
+      // Body
+      R(-7,-4,15,14,'#660000');
+      C(0,-7,7,'#440000');             // head
+      // Multiple horns
+      ctx.fillStyle='#1a0000';
+      ctx.beginPath(); ctx.moveTo(-5,-11); ctx.lineTo(-9,-24+ad); ctx.lineTo(-2,-12); ctx.fill(); // outer left
+      ctx.beginPath(); ctx.moveTo(5,-11);  ctx.lineTo(9,-24-ad);  ctx.lineTo(2,-12);  ctx.fill(); // outer right
+      ctx.beginPath(); ctx.moveTo(-2,-12); ctx.lineTo(-4,-20+ad); ctx.lineTo(1,-12);  ctx.fill(); // inner left
+      ctx.beginPath(); ctx.moveTo(2,-12);  ctx.lineTo(4,-20-ad);  ctx.lineTo(-1,-12); ctx.fill(); // inner right
+      // Glowing eyes
+      ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=16;
+      ctx.fillStyle='#ff2200';
+      ctx.beginPath(); ctx.arc(-3,-8,3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3,-8,3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ffaa00';
+      ctx.beginPath(); ctx.arc(-3,-8,1.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3,-8,1.2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      R(-4,10,3,6,'#550000');
+      R(2,10,3,6,'#550000');
+      // Phase 2: red aura
+      if (enemy && enemy._archPhase2) {
+        ctx.save(); ctx.globalAlpha=0.25+Math.abs(Math.sin(t))*0.15;
+        ctx.shadowColor='#ff0000'; ctx.shadowBlur=20;
+        ctx.fillStyle='#ff0000';
+        ctx.beginPath(); ctx.arc(0,0,size+4,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    }
   }
 }
 
@@ -1370,10 +1831,10 @@ class Enemy {
     this.cursed        = false; this.curseTimer = 0; this.curseFactor   = 1;
     this.scorpionStacks = 0;    this.scorpionStackTimer = 0;
     // ── Map 2 desert enemy specials ──────────────────────────────────────────
-    this.gorgeSpeedMult    = 1;     // pharaoh speed aura multiplier (reset each frame)
-    this._revived          = false; // anubis: revived once flag
-    this.teleportTimer     = def.teleportInterval || 0;  // dark mage teleport
-    this._deathSpawnDone   = false; // camel_rider / sand_golem death spawn flag
+    this.gorgeSpeedMult    = 1;     // pharaoh/portal_guardian speed aura (reset each frame)
+    this._revived          = false; // anubis / skel_warrior: revived once flag
+    this.teleportTimer     = def.teleportInterval || 0;  // dark_mage / lich teleport
+    this._deathSpawnDone   = false; // camel_rider / sand_golem / bone_golem death spawn flag
     // Tomb guardian: start invisible for N seconds
     if (def.startInvis) {
       this.invis         = true;
@@ -1381,6 +1842,17 @@ class Enemy {
     } else {
       this.startInvisTimer = 0;
     }
+    // ── Map 3 maze enemy specials ─────────────────────────────────────────────
+    this.mazeShieldActive    = def.shieldBlock || false;  // dark_knight: first hit fully blocked
+    this.mazeNecroTimer      = (type === 'necro_lord')      ? 12  : 0;  // necro_lord summon timer (sec)
+    this.mazeShadowTimer     = (type === 'shadow_assassin') ? 5   : 0;  // shadow_assassin visible timer
+    this.mazeForcedInvisTimer= 0;  // shadow_lord effect or shadow_assassin invis phase
+    this.mazeVoidMageTimer   = (type === 'void_mage')       ? 15  : 0;  // void_mage tower debuff timer
+    this.mazeShadowLordTimer = (type === 'shadow_lord')     ? 20  : 0;  // shadow_lord global invis timer
+    this.pendingVoidMageEffect   = false;
+    this.pendingShadowLordEffect = false;
+    this.mazeBansheeSlowPending  = false;
+    this._archPhase2         = false;  // archdemon 50% HP phase
   }
 
   update(dt) {
@@ -1483,15 +1955,66 @@ class Enemy {
       this.startInvisTimer -= dt;
       if (this.startInvisTimer <= 0) { this.startInvisTimer = 0; this.invis = false; }
     }
-    // Dark mage: teleport forward every N seconds
+    // Dark mage / Lich: teleport forward every N seconds
     if (this.teleportTimer > 0 && !this.dead) {
       this.teleportTimer -= dt;
       if (this.teleportTimer <= 0) {
         this.teleportTimer = ENEMY_DEFS[this.type].teleportInterval;
-        this.pathIndex = Math.min(this.pathIndex + 5, this.path.length - 2);
+        const cells = ENEMY_DEFS[this.type].teleportCells || 5;
+        this.pathIndex = Math.min(this.pathIndex + cells, this.path.length - 2);
         this.x = this.path[this.pathIndex].x;
         this.y = this.path[this.pathIndex].y;
       }
+    }
+
+    // ── Map 3 maze enemy specials ─────────────────────────────────────────────
+    // Shadow assassin: cycle visibility
+    if (this.type === 'shadow_assassin') {
+      if (this.mazeForcedInvisTimer <= 0) {
+        this.mazeShadowTimer -= dt;
+        if (this.mazeShadowTimer <= 0) {
+          this.mazeForcedInvisTimer = 2; // 2 sec invisible
+        }
+      }
+    }
+    // Forced invis timer (shadow_assassin invis phase + shadow_lord effect)
+    if (this.mazeForcedInvisTimer > 0) {
+      this.mazeForcedInvisTimer -= dt;
+      this.invis = true;
+      if (this.mazeForcedInvisTimer <= 0) {
+        this.invis = false;
+        if (this.type === 'shadow_assassin') this.mazeShadowTimer = 5;
+      }
+    }
+    // Necro lord: periodically summon a skel_warrior
+    if (this.type === 'necro_lord' && !this.dead) {
+      this.mazeNecroTimer -= dt;
+      if (this.mazeNecroTimer <= 0) {
+        this.mazeNecroTimer = 12;
+        this.pendingSummon = { type: 'skel_warrior', count: 1, hpMult: 0.4 };
+      }
+    }
+    // Void mage: periodically debuff a nearby tower
+    if (this.type === 'void_mage' && !this.dead) {
+      this.mazeVoidMageTimer -= dt;
+      if (this.mazeVoidMageTimer <= 0) {
+        this.mazeVoidMageTimer = 15;
+        this.pendingVoidMageEffect = true;
+      }
+    }
+    // Shadow lord: every 20 sec make all enemies invis for 3 sec
+    if (this.type === 'shadow_lord' && !this.dead) {
+      this.mazeShadowLordTimer -= dt;
+      if (this.mazeShadowLordTimer <= 0) {
+        this.mazeShadowLordTimer = 20;
+        this.pendingShadowLordEffect = true;
+      }
+    }
+    // Archdemon: at 50% HP, speed ×1.5 and armor drops to 20%
+    if (this.type === 'archdemon' && !this._archPhase2 && this.hp < this.maxHP * 0.5) {
+      this._archPhase2 = true;
+      this.speed = this.baseSpeed * 1.5;
+      this.armor = 0.20;
     }
 
     // ── Map 2 DoTs / states ───────────────────────────────────────────────────
@@ -1533,6 +2056,8 @@ class Enemy {
   }
 
   applySlow(factor, duration) {
+    // Архидемон: полный иммунитет к замедлению
+    if (this.type === 'archdemon') return;
     // Малькар: иммунитет к замедлению 50% (замедление вдвое слабее)
     if (this.type === 'malkar') {
       factor = 1 - (1 - factor) * 0.5;
@@ -1562,16 +2087,29 @@ class Enemy {
   }
 
   takeDamage(dmg, armorPierce = false) {
+    // Dark knight: first hit fully blocked
+    if (this.mazeShieldActive) {
+      this.mazeShieldActive = false;
+      this.lastArmorBlock = dmg;
+      return;
+    }
+    // Ghost: 50% of all damage ignored (not armor)
+    const def = ENEMY_DEFS[this.type];
+    if (def?.ghostDamageReduction) dmg *= (1 - def.ghostDamageReduction);
     const armorBlock = armorPierce ? 0 : dmg * this.armor;
     dmg -= armorBlock;
     if (this.eliteShieldTimer > 0) dmg *= 0.5;
     if (this.cursed)                dmg *= this.curseFactor;
     if (this.blocked && this.blockedFactor > 1) dmg *= this.blockedFactor;
     this.lastArmorBlock = armorBlock;
+    // Banshee: 30% chance to request tower slow (handled in game.js)
+    if (def?.bansheeSlowChance && Math.random() < def.bansheeSlowChance) {
+      this.mazeBansheeSlowPending = true;
+    }
     this.hp -= dmg;
     if (this.hp <= 0) {
-      // Анубис: воскрешение один раз с 30% HP
-      if (ENEMY_DEFS[this.type]?.revive && !this._revived) {
+      // Анубис / skel_warrior: воскрешение один раз с 30% HP
+      if (def?.revive && !this._revived) {
         this._revived = true;
         this.hp = Math.round(this.maxHP * 0.3);
         return;
@@ -1624,20 +2162,23 @@ function buildWave(wave, enemyMult = 1, mapId = 'ironhold') {
     t += INTERVAL * 4;
   }
 
-  // Карта 2 (горж): только свои уникальные враги, карта 1 не появляется
+  // Карта 2 и 3 используют только свои уникальные враги
   const isGorge = mapId === 'gorge';
+  const isMaze  = mapId === 'maze';
   const ground = Object.keys(ENEMY_DEFS).filter(k => {
     const d = ENEMY_DEFS[k];
     if (k === 'overlord' || d.air || d.isFinalBoss || d.noWaveSpawn) return false;
     if (d.startWave > wave) return false;
     if (isGorge) return d.mapOnly === 'gorge';
-    return !d.mapOnly || d.mapOnly === mapId;
+    if (isMaze)  return d.mapOnly === 'maze';
+    return !d.mapOnly;
   });
   const air = Object.keys(ENEMY_DEFS).filter(k => {
     const d = ENEMY_DEFS[k];
     if (!d.air || d.isFinalBoss || d.noWaveSpawn) return false;
     if (d.startWave > wave) return false;
     if (isGorge) return d.mapOnly === 'gorge';
+    if (isMaze)  return d.mapOnly === 'maze';
     return true;
   });
   const available = air.length > 0 ? [...ground, ...air] : ground;

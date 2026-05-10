@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\user\\\\tower-defense-first-time\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(node --check js/enemies.js)",
+      "Bash(node --check js/game.js)",
+      "Bash(node --check js/towers.js)",
+      "Bash(node -e ' *)",
+      "Bash(git add *)"
+    ]
+  }
+}

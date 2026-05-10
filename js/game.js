@@ -737,14 +737,15 @@ class Game {
 
     this.spawnEnemies(dt);
 
-    // Карта 2: Фараон (аура скорости) и Жрец Ра (лечение союзников)
-    if (this.currentMap?.id === 'gorge') {
+    // Карта 2: Фараон / Жрец Ра; Карта 3: Страж портала — ауры скорости и лечения
+    const mapId = this.currentMap?.id;
+    if (mapId === 'gorge' || mapId === 'maze') {
       // Сбросить множитель скорости
       this.enemies.forEach(e => { e.gorgeSpeedMult = 1; });
       this.enemies.forEach(e => {
         if (e.dead || e.reached) return;
         const def = ENEMY_DEFS[e.type];
-        // Фараон: аура +20% скорость в радиусе 2 клеток
+        // Фараон / Страж портала: аура скорости
         if (def?.speedAura) {
           this.enemies.forEach(other => {
             if (other === e || other.dead || other.reached) return;
@@ -835,6 +836,37 @@ class Game {
         this.towerDamageDebuffTimer = 10;
         this.ui.showMessage('Малькар кричит — башни слабеют!', 3500);
       }
+      // Маг Пустоты: дебафф случайной башни в радиусе 4 клеток (-40% урон, 5 сек)
+      if (e.pendingVoidMageEffect) {
+        e.pendingVoidMageEffect = false;
+        const radius = 144; // 4 cells
+        const nearby = this.towers.filter(t => {
+          if (t.isMine || t.isAura) return false;
+          const dx = t.x - e.x, dy = t.y - e.y;
+          return Math.sqrt(dx*dx+dy*dy) <= radius;
+        });
+        if (nearby.length > 0) {
+          const target = nearby[Math.floor(Math.random() * nearby.length)];
+          target.mazeTowerDebuffTimer = 5;
+          this.spawnParticles(target.x, target.y, '#6600cc');
+          this.ui.showMessage('Маг Пустоты ослабил башню!', 2000);
+        }
+      }
+      // Повелитель теней: делает всех врагов невидимыми на 3 сек
+      if (e.pendingShadowLordEffect) {
+        e.pendingShadowLordEffect = false;
+        this.enemies.forEach(other => {
+          if (!other.dead && !other.reached) {
+            other.mazeForcedInvisTimer = Math.max(other.mazeForcedInvisTimer, 3.0);
+          }
+        });
+        this.ui.showMessage('Тьма скрывает всех врагов!', 3000);
+      }
+    });
+
+    // Убыль дебафф-таймеров башен карты 3
+    this.towers.forEach(t => {
+      if (t.mazeTowerDebuffTimer > 0) t.mazeTowerDebuffTimer -= dt;
     });
 
     // Towers shoot + legendary effects
@@ -846,6 +878,7 @@ class Game {
           if (this.furyActive)                bullet.damage = Math.round(bullet.damage * 1.5);
           if (this.plagueWavesLeft > 0)       bullet.damage = Math.round(bullet.damage * 0.75);
           if (this.towerDamageDebuffTimer > 0) bullet.damage = Math.round(bullet.damage * 0.7);
+          if (t.mazeTowerDebuffTimer > 0)     bullet.damage = Math.round(bullet.damage * 0.6);
         }
         this.bullets.push(bullet);
       }
@@ -915,6 +948,24 @@ class Game {
           this.spawnParticles(e.x, e.y, e.color || '#aaa');
           this.deathStains.push({ x: e.x, y: e.y, r: e.size * 2, life: 180, maxLife: 180 });
           this.achievements.onEnemyKilled(e);
+          // Душепожиратель: восстанавливает HP когда враг умирает рядом
+          this.enemies.forEach(sd => {
+            if (sd === e || sd.type !== 'soul_devourer' || sd.dead || sd.reached) return;
+            const sdx = sd.x - e.x, sdy = sd.y - e.y;
+            if (Math.sqrt(sdx*sdx+sdy*sdy) <= 72) sd.hp = Math.min(sd.maxHP, sd.hp + 50);
+          });
+        }
+        // Баньши: 30% шанс замедлить ближайшую башню на 3 сек
+        if (e.mazeBansheeSlowPending) {
+          e.mazeBansheeSlowPending = false;
+          let nearestTower = null, nearDist = Infinity;
+          this.towers.forEach(t => {
+            if (t.isMine || t.isAura) return;
+            const dx = t.x - e.x, dy = t.y - e.y;
+            const d = Math.sqrt(dx*dx+dy*dy);
+            if (d < nearDist) { nearDist = d; nearestTower = t; }
+          });
+          if (nearestTower) nearestTower.cooldown += 180; // +3 sec extra cooldown
         }
         // Яд-проклятие: распространяется на соседей (радиус 1 клетки)
         if (b.poisonSpread && !e.dead && e.poisonTimer > 0) {
@@ -990,13 +1041,13 @@ class Game {
       });
     }
 
-    // Смерть врагов на карте 2: взрывы, спавны
-    if (this.currentMap?.id === 'gorge') {
+    // Смерть врагов: взрывы, спавны (карты 2 и 3)
+    {
       const toSpawn = [];
       this.enemies.forEach(e => {
         if (!e.dead) return;
         const def = ENEMY_DEFS[e.type];
-        // Взрыв при смерти (lancer / spearman)
+        // Взрыв при смерти (lancer / spearman / fire_demon)
         if (def?.deathExplosion && !e._deathExplosionDone) {
           e._deathExplosionDone = true;
           const { damage, radius } = def.deathExplosion;
@@ -1004,7 +1055,7 @@ class Game {
             const dx = t.x - e.x, dy = t.y - e.y;
             if (Math.sqrt(dx * dx + dy * dy) <= radius) t.takeDamage(damage);
           });
-          this.spawnParticles(e.x, e.y, '#c0392b');
+          this.spawnParticles(e.x, e.y, e.type === 'fire_demon' ? '#ff6600' : '#c0392b');
         }
         // Верблюжий всадник: пеший всадник продолжает идти
         if (def?.spawnOnDeath === 'rider_foot' && !e._deathSpawnDone) {
@@ -1026,6 +1077,18 @@ class Game {
             toSpawn.push(m);
           }
           this.spawnParticles(e.x, e.y, '#c8a25e');
+        }
+        // Костяной голем: распадается на 3 скелета-воина
+        if (def?.spawnOnDeath === 'skel_warrior' && !e._deathSpawnDone) {
+          e._deathSpawnDone = true;
+          for (let i = 0; i < 3; i++) {
+            const m = new Enemy('skel_warrior', this.wave, this.path);
+            m.pathIndex = Math.min(e.pathIndex, this.path.length - 2);
+            m.x = e.x + (Math.random() - 0.5) * 22;
+            m.y = e.y + (Math.random() - 0.5) * 22;
+            toSpawn.push(m);
+          }
+          this.spawnParticles(e.x, e.y, '#9b59b6');
         }
       });
       toSpawn.forEach(m => this.enemies.push(m));
